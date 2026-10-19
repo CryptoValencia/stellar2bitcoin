@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Comprobar cotización XLM→BTC sin conectar cartera
+- [x] Comprobar cotización XLM→BTC sin conectar cartera
 
 - [x] Añadir logos a las opciones de Connect wallet
 - [x] Verificar tokens por proveedor y explicar integraciones pendientes
