@@ -91,7 +91,7 @@ export const getSwapOrder = createServerFn({ method: "GET" }).handler(async () =
     let order: SwapOrder;
     if (row.order.provider === "fixedfloat") {
       const { ffStatus } = await import("./providers.server");
-      order = { ...await ffStatus(row.order.id, row.secret.token ?? ""), expiresAt: row.order.expiresAt };
+      order = { ...await ffStatus(row.order.id, row.secret["token"] ?? ""), expiresAt: row.order.expiresAt };
     } else if (row.order.provider === "changenow") {
       const { cnStatus } = await import("./providers.server");
       order = await cnStatus(row.order);

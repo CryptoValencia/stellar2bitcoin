@@ -11,9 +11,9 @@ describe("live quote aggregation", () => {
     ] });
     const q = await fetchAllQuotes("XLM", 1000, "mainnet");
     expect(q.map((x) => x.id)).toEqual(["changenow", "sideshift"]);
-    expect(q[0].btcOut).toBe(0.00215);
-    expect(q[0].feeUsd).toBeNull();
-    expect(q[0].etaMin).toBeNull();
+    expect(q[0]?.btcOut).toBe(0.00215);
+    expect(q[0]?.feeUsd).toBeNull();
+    expect(q[0]?.etaMin).toBeNull();
   });
   it("does not substitute a simulated price when providers fail", async () => {
     vi.mocked(getSideShiftQuote).mockResolvedValue({ ok: false, error: "unavailable" });

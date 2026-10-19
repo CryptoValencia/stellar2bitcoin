@@ -4,8 +4,6 @@ import type { Token } from "@/services/aggregatorService";
 const ICON = (s: string) => `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${s}.svg`;
 
 export function TokenLogo({ symbol, size = 20 }: { symbol: Token | "BTC"; size?: number }) {
-  if (symbol === "EURC")
-    return <span className="inline-flex items-center justify-center rounded-full bg-sky font-bold text-ink-foreground" style={{ width: size, height: size, fontSize: size * 0.55 }}>€</span>;
   return <img src={ICON(symbol.toLowerCase())} alt={symbol} width={size} height={size} className="rounded-full" />;
 }
 
