@@ -178,22 +178,3 @@ body::before {
   box-shadow: 0 10px 40px -14px color-mix(in oklab, var(--acid) 22%, transparent);
 }
 
-/* Single-line Michroma wordmark; the orange 2 is italic and bold, same size. */
-.brand-wordmark {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 7px;
-  font-family: var(--font-brand);
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  white-space: nowrap;
-}
-.brand-bridge {
-  color: var(--neon);
-  display: inline-block;
-  transform: skewX(-10deg);
-  -webkit-text-stroke: 1.2px var(--neon);
-}
-.brand-words { display: inline; }
