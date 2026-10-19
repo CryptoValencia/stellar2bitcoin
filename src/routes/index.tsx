@@ -113,7 +113,7 @@ function Index() {
               </div>
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
-              <span className="flex shrink-0 items-center gap-2 rounded-[8px] bg-muted py-1 pl-1 pr-2.5 text-xs font-bold"><TokenLogo symbol="BTC" /> BTC</span>
+              <span className="flex shrink-0 items-center gap-2.5 text-2xl font-bold tracking-tight"><TokenLogo symbol="BTC" size={32} /> BTC</span>
               <div className={`min-w-0 truncate text-right text-4xl font-bold tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
                 {quote && !scanning ? quote.btcOut.toFixed(8) : "0"}
               </div>
@@ -129,33 +129,19 @@ function Index() {
 
         {/* Details */}
         <div className="mt-5 space-y-3 px-1 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Route</span>
-            <button disabled={!quote} onClick={() => setShowRoutes(!showRoutes)} className="flex items-center gap-2">
-              {quote ? (<>
-                <span>{quote.provider}</span>
-                {quote.id === quotes[0]?.id && <span className="rounded-md bg-acid/15 px-2 py-0.5 text-[11px] text-acid">Best rate</span>}
-                <span className="text-muted-foreground">~{quote.etaMin} min {showRoutes ? "▴" : "▾"}</span>
-              </>) : <span className="text-muted-foreground">{scanning ? "Finding best rate…" : "—"}</span>}
-            </button>
-          </div>
-          {showRoutes && quotes.length > 0 && (
-            <div className="panel p-1.5">
-              {quotes.map((q, i) => (
-                <button key={q.id} onClick={() => { setSelected(q.id); setShowRoutes(false); }}
-                  className={`flex w-full items-center justify-between rounded-[10px] px-3 py-2.5 text-left text-xs transition ${q.id === selected ? "bg-muted" : "hover:bg-muted/60"}`}>
-                  <span className="flex items-center gap-2">{q.provider}
-                    {i === 0 && <span className="text-acid">best</span>}
-                    {q.id === fastest?.id && i !== 0 && <span className="text-muted-foreground">fastest</span>}
-                    {q.live && <span className="text-muted-foreground">· live</span>}
-                  </span>
-                  <span className="font-bold">{q.btcOut.toFixed(8)}</span>
+          {quotes.length > 1 && (
+            <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
+              {([["cheap", "Best rate", quotes[0]], ["fast", "Fastest", fastest]] as const).map(([k, label, q]) => (
+                <button key={k} onClick={() => q && setSelected(q.id)}
+                  className={`flex-1 rounded-full px-2.5 py-1.5 transition ${q && selected === q.id ? "bg-panel text-foreground shadow-sm" : "text-muted-foreground"}`}>
+                  {label}
                 </button>
               ))}
             </div>
           )}
-          <Detail k="Rate" v={quote && amt ? `1 ${token} = ${Math.round((quote.btcOut / amt) * 1e8)} sats` : "—"} />
-          <Detail k="Network fee" v={quote ? `$${quote.feeUsd.toFixed(2)}` : "—"} />
+          <Detail k="Rate" v={quote && amt ? `1 ${token} = ${Math.round((quote.btcOut / amt) * 1e8)} sats` : scanning ? "Finding best rate…" : "—"} />
+          <Detail k="Fee" v={quote ? `$${quote.feeUsd.toFixed(2)}` : "—"} />
+          <Detail k="Time" v={quote ? `~${quote.etaMin} min` : "—"} />
           <Detail k="Price" v={quote ? (quote.live ? "Live" : "Estimated") : "—"} />
         </div>
 
