@@ -1,6 +1,7 @@
 # Roadmap
 
 - [ ] Corregir comparación engañosa de valor XLM→BTC y verificar cotización real sin cifras simuladas
+- [ ] Revisar 100 USDC→BTC y opciones de agregación para mejorar el importe recibido
 
 - [x] Comprobar cotización XLM→BTC sin conectar cartera
 
