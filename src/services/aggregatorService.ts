@@ -84,11 +84,14 @@ export async function fetchChangeNowQuote(fromToken: Token, amount: number): Pro
   return simulate("changenow", fromToken, amount);
 }
 
-export async function fetchFixedFloatQuote(fromToken: Token, amount: number): Promise<Quote> {
-  // FixedFloat requires HMAC-signed requests; route through a server proxy when live.
-  await delay(400 + Math.random() * 400);
-  const q = simulate("fixedfloat", fromToken, amount);
-  return { ...q, live: false };
+export async function fetchFixedFloatQuote(fromToken: Token, amount: number, net: BtcNet = "mainnet"): Promise<Quote> {
+  const sim = simulate("fixedfloat", fromToken, amount);
+  try {
+    const { getFixedFloatQuote } = await import("@/lib/fixedfloat.functions");
+    const r = await getFixedFloatQuote({ data: { from: fromToken, amount, lightning: net === "lightning", fixed: true } });
+    if (r.ok) return { ...sim, btcOut: r.btcOut, live: true };
+  } catch { /* fall back */ }
+  return sim;
 }
 
 export async function fetchCctpChainflipQuote(fromToken: Token, amount: number): Promise<Quote | null> {
@@ -99,7 +102,7 @@ export async function fetchCctpChainflipQuote(fromToken: Token, amount: number):
 
 export async function fetchAllQuotes(from: Token, amount: number, net: BtcNet): Promise<Quote[]> {
   const res = await Promise.all([
-    fetchSideShiftQuote(from, amount), fetchFixedFloatQuote(from, amount),
+    fetchSideShiftQuote(from, amount), fetchFixedFloatQuote(from, amount, net),
     fetchChangeNowQuote(from, amount), fetchCctpChainflipQuote(from, amount),
   ]);
   return res.filter((q): q is Quote => !!q && (net === "mainnet" || q.lightning)).sort((a, b) => b.btcOut - a.btcOut);
