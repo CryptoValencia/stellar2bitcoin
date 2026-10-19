@@ -86,7 +86,7 @@ function Index() {
               <TokenSelect value={token} onChange={setToken} />
             </div>
             <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0"
-              className="mt-3 w-full bg-transparent font-display text-4xl font-medium tracking-tight outline-none placeholder:text-muted-foreground/40" />
+              className="mt-3 w-full bg-transparent font-display text-4xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/40" />
             <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-muted-foreground">
               <span>≈ ${(amt * USD_PRICE[token]).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               {wallet && <button onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))} className="hover:text-foreground">Balance {balance.toLocaleString()} · <b>MAX</b></button>}
@@ -99,7 +99,7 @@ function Index() {
               <span className="text-sm text-muted-foreground">You receive</span>
               <span className="flex items-center gap-2 rounded-[8px] bg-muted py-1 pl-1 pr-2.5 text-xs font-medium"><TokenLogo symbol="BTC" /> BTC</span>
             </div>
-            <div className={`mt-3 font-display text-4xl font-medium tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
+            <div className={`mt-3 font-display text-4xl font-bold tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
               {quote && !scanning ? quote.btcOut.toFixed(8) : "0"}
             </div>
             <div className="mt-4 flex rounded-[10px] bg-muted p-1">
