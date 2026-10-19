@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { BTC_USD, USD_PRICE } from "@/services/aggregatorService";
-
-export interface Wallet { name: string; address: string; xlm: number; usdc: number; eurc: number }
-
-const WALLETS = ["Freighter", "Lobstr", "xBull", "Albedo"];
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { connectWallet, WALLET_NAMES, type Wallet, type WalletName } from "@/services/walletService";
+export type { Wallet } from "@/services/walletService";
 
 export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (w: Wallet | null) => void }) {
   const [open, setOpen] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const [rate, setRate] = useState(USD_PRICE.XLM / BTC_USD);
   const [light, setLight] = useState(false);
   useEffect(() => { setLight(localStorage.getItem("s2b_theme") === "light"); }, []);
@@ -22,12 +23,15 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
     return () => clearInterval(t);
   }, []);
 
-  const connect = (name: string) => {
+  const connect = async (name: WalletName) => {
     setConnecting(name);
-    setTimeout(() => {
-      onConnect({ name, address: "GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB7K9A", xlm: 12480.5521, usdc: 3250.12, eurc: 840.0 });
-      setConnecting(null); setOpen(false);
-    }, 1400);
+    setError("");
+    try {
+      onConnect(await connectWallet(name));
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection cancelled or unavailable. Please try again.");
+    } finally { setConnecting(null); }
   };
 
   const items = (
@@ -57,33 +61,32 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
           {light ? "dark" : "light"}
         </button>
         {wallet ? (
-          <button onClick={() => onConnect(null)} className="chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
+          <Button variant="secondary" onClick={() => onConnect(null)} title="Disconnect wallet" aria-label="Disconnect wallet" className="chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
-          </button>
+          </Button>
         ) : (
-          <button id="connect-wallet" onClick={() => setOpen(true)} className="btn-cta px-4 py-2 text-xs font-sans text-sm font-semibold">
+          <Button id="connect-wallet" onClick={() => { setError(""); setOpen(true); }} className="btn-cta px-4 py-2 font-sans text-sm font-semibold">
             Connect wallet
-          </button>
+          </Button>
         )}
       </div>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur" onClick={() => setOpen(false)}>
-          <div className="panel glow-xlm w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-1 text-sm font-semibold tracking-tight text-xlm">Connect a Stellar wallet</div>
-            <p className="mb-5 font-mono text-xs text-muted-foreground">Handshake with a Stellar signer to unlock XDR signing.</p>
+      <Dialog open={open} onOpenChange={(value) => { if (!connecting) setOpen(value); }}>
+          <DialogContent className="w-[calc(100%-2rem)] max-w-md bg-panel" onEscapeKeyDown={(e) => { if (connecting) e.preventDefault(); }} onPointerDownOutside={(e) => { if (connecting) e.preventDefault(); }}>
+            <DialogTitle className="text-sm text-foreground">Connect a Stellar wallet</DialogTitle>
+            <DialogDescription className="text-xs">Stellar Mainnet</DialogDescription>
             <div className="grid gap-2">
-              {WALLETS.map((w) => (
-                <button key={w} disabled={!!connecting} onClick={() => connect(w)}
-                  className="chamfer-sm flex items-center justify-between bg-muted px-4 py-3 font-mono text-sm transition hover:glow-xlm">
+              {WALLET_NAMES.map((w) => (
+                <Button variant="secondary" key={w} disabled={!!connecting} onClick={() => connect(w)}
+                  className="h-12 justify-between bg-muted px-4 font-mono text-sm">
                   <span>{w}</span>
-                  <span className="text-xs text-muted-foreground">{connecting === w ? <span className="text-acid">Connecting<span className="caret">_</span></span> : "Available"}</span>
-                </button>
+                  <span className="text-xs text-muted-foreground">{connecting === w ? "Awaiting approval…" : "→"}</span>
+                </Button>
               ))}
             </div>
-          </div>
-        </div>
-      )}
+            {error && <p role="alert" className="break-words text-xs text-destructive">{error}</p>}
+          </DialogContent>
+      </Dialog>
     </header>
   );
 }
