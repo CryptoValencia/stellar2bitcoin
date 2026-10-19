@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Corregir Connect wallet: autorización real, saldo real y errores claros
+
 - [x] Volver el título a STELLAR2BITCOIN (2 en naranja, resto blanco)
 - [x] Quitar el brillo azul (teal sutil)
 - [x] Quitar el pie de página (DevDrawer)
