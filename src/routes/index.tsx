@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
+import { getMarketPrices, type MarketPrices } from "@/lib/market.functions";
 import { chooseExecutableQuotes, orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
 import { quoteMatches } from "@/lib/quote-safety";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
@@ -49,8 +50,17 @@ function Index() {
   const [creating, setCreating] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [requestId, setRequestId] = useState<string | null>(null);
+  const [prices, setPrices] = useState<MarketPrices | null>(null);
   const createOrder = useServerFn(createSwapOrder);
   const recoverOrder = useServerFn(getSwapOrder);
+  const loadPrices = useServerFn(getMarketPrices);
+  useEffect(() => {
+    let active = true;
+    const load = () => loadPrices().then((r) => { if (active && r.ok && r.prices) setPrices(r.prices); }).catch(() => {});
+    load();
+    const t = setInterval(load, 60000);
+    return () => { active = false; clearInterval(t); };
+  }, [loadPrices]);
   useEffect(() => {
     let active = true;
     recoverOrder().then((result) => {
@@ -128,6 +138,7 @@ function Index() {
             <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
               <button disabled={!wallet} onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))}
                 className="rounded-full border border-border px-3 py-1 font-bold text-foreground transition hover:bg-muted disabled:opacity-40">MAX</button>
+              <span>{amt > 0 && prices ? `≈ $${(amt * (token === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}</span>
             </div>
           </div>
 
@@ -154,6 +165,9 @@ function Index() {
                 {quote && !scanning ? quote.btcOut.toFixed(8) : scanning ? "…" : "—"}
               </div>
             </div>
+            <div className="mt-1 text-right text-xs text-muted-foreground">
+              {quote && !scanning && prices ? `≈ $${(quote.btcOut * prices.btcUsd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}
+            </div>
             <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "Lightning invoice (lnbc…)" : "Your BTC address (bc1…)"}
               className={`mt-4 w-full rounded-[10px] bg-muted px-3 py-3 text-xs outline-none transition ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground/40"}`} />
             {addr !== "empty" && <div className={`mt-2 text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{ADDR_LABEL[addr]?.[0]}</div>}
@@ -172,7 +186,9 @@ function Index() {
               ))}
             </div>
           )}
-          <Detail k="Rate" v={quote && !scanning && amt ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats` : scanning ? "Updating…" : "—"} />
+          <Detail k="Rate" v={quote && !scanning && amt && prices
+            ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.btcOut / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+            : scanning ? "Updating…" : "—"} />
           <Detail k="Fee" v={quote && !scanning ? "Included in rate" : "—"} />
           <Detail k="Time" v={quote && !scanning && quote.etaMin !== null ? `~${quote.etaMin} min` : "—"} />
           <Detail k="Price" v={quote && !scanning ? "Live · fixed" : "—"} />
