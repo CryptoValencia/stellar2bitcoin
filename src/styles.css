@@ -99,8 +99,8 @@
 @utility glow-xlm { box-shadow: 0 0 0 1px var(--border); }
 @utility glow-btc { box-shadow: 0 0 0 1.5px var(--foreground); }
 @utility glow-acid { box-shadow: 0 0 0 1.5px var(--acid); }
-@utility text-glow-btc { font-weight: 700; }
-@utility text-glow-xlm { font-weight: 700; }
+@utility text-glow-btc { text-shadow: 0 0 12px color-mix(in oklab, var(--brand-btc) 70%, transparent); }
+@utility text-glow-xlm { text-shadow: 0 0 10px color-mix(in oklab, var(--brand-xlm) 70%, transparent); }
 @utility glitch-hover { transition: transform .2s ease; &:hover { transform: translateY(-1px); } }
 @utility glitch { opacity: 1; }
 @utility btn-cta {
