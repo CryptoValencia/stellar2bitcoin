@@ -25,6 +25,7 @@ export const getSideShiftQuote = createServerFn({ method: "POST" })
       const tasks: Promise<QuoteSnap>[] = [ffQuote(data), cnQuote(data)];
       if (ss) tasks.unshift(requestQuote(data, ss, clientIp()));
       const settled = await Promise.allSettled(tasks);
+      settled.forEach((r) => { if (r.status === "rejected") console.warn("quote unavailable:", r.reason instanceof Error ? r.reason.message : r.reason); });
       const key = signingKey(hash);
       const quotes = await Promise.all(settled.flatMap((r) => r.status === "fulfilled" ? [r.value] : []).map(async (quote) => ({ btcOut: Number(quote.settleAmount), quote, quoteSignature: await signQuote(quote, key) })));
       if (!quotes.length) return { ok: false as const, error: "Price unavailable for this amount." };
