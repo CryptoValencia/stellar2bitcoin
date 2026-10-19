@@ -1,6 +1,6 @@
 import { getCookie, getRequestHeader, getRequestUrl, setCookie, setResponseHeader } from "@tanstack/react-start/server";
 import { isIP } from "node:net";
-import { AFFILIATE_ID, quoteInput, shiftSchema, type SwapOrder } from "./sideshift-schema";
+import { AFFILIATE_ID, quoteInput, quoteSnapshotSchema, shiftSchema, type SwapOrder } from "./sideshift-schema";
 import type { z } from "zod";
 const BASE = "https://sideshift.ai/api/v2";
 export async function sideShiftRequest(path: string, secret: string, ip?: string, body?: object) {
@@ -38,7 +38,8 @@ export async function requestQuote(data: z.infer<typeof quoteInput>, secret: str
   const pair = pairs.find((p) => p.depositCoin.toUpperCase() === data.from);
   if (!pair || data.amount < Number(pair.min) || data.amount > Number(pair.max)) throw new Error(pair ? `Amount must be between ${pair.min} and ${pair.max} ${data.from}.` : "No price available for this swap.");
   const quote = await sideShiftRequest("/quotes", secret, ip, { affiliateId: AFFILIATE_ID, depositCoin: data.from.toLowerCase(), depositNetwork: "stellar", settleCoin: "btc", settleNetwork, depositAmount: String(data.amount) }) as { id: string; settleAmount: string; expiresAt: string };
-  if (!quote.id || !(Number(quote.settleAmount) > 0) || !(Date.parse(quote.expiresAt) > Date.now())) throw new Error("Price expired. Please try again.");
-  return quote;
+  const snapshot = quoteSnapshotSchema.parse({ ...data, id: quote.id, settleAmount: quote.settleAmount, expiresAt: quote.expiresAt });
+  if (!(Date.parse(snapshot.expiresAt) > Date.now())) throw new Error("Price expired. Please try again.");
+  return snapshot;
 }
 export function parseOrder(value: unknown): SwapOrder { return shiftSchema.parse(value); }
