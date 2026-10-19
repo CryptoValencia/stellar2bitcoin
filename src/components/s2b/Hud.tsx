@@ -39,8 +39,9 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
         <div className="shrink-0" aria-label="STELLAR2BITCOIN">
           <span className="brand-wordmark" aria-hidden="true">
-            <span className="brand-words text-foreground"><span>STELLAR</span><span>BITCOIN</span></span>
-            <span className="brand-bridge text-neon">2</span>
+            <span className="text-foreground">STELLAR</span>
+            <span className="brand-bridge">2</span>
+            <span className="text-foreground">BITCOIN</span>
           </span>
         </div>
         
