@@ -69,7 +69,6 @@ function Index() {
   const blocker = !wallet ? "CONNECT WALLET FIRST" : amt <= 0 ? "ENTER AMOUNT" : amt > balance ? "INSUFFICIENT BALANCE"
     : addr === "empty" || addr === "invalid" ? "ENTER VALID DESTINATION" : !quote ? "AWAITING ROUTE" : null;
 
-  const [showRoutes, setShowRoutes] = useState(false);
   const pill = (on: boolean) => `flex-1 rounded-[7px] py-1.5 text-xs transition ${on ? "bg-panel font-medium shadow-sm" : "text-muted-foreground"}`;
 
   return (
