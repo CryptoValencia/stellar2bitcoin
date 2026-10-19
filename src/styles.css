@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-display: "Space Mono", ui-monospace, monospace;
-  --font-brand: "Michroma", "Space Mono", ui-monospace, monospace;
+  --font-brand: "Space Mono", ui-monospace, monospace;
   --font-mono: "Space Mono", ui-monospace, monospace;
   --font-sans: "Space Mono", ui-monospace, monospace;
   --radius-sm: var(--radius);
@@ -32,7 +32,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-btc: var(--btc);
-  --color-neon: var(--neon);
+  --color-brand-xlm: var(--brand-xlm);
+  --color-brand-btc: var(--brand-btc);
   --color-xlm: var(--xlm);
   --color-acid: var(--acid);
   --color-void: var(--void);
@@ -52,7 +53,8 @@
   --popover: oklch(0.19 0.004 260);
   --popover-foreground: var(--foreground);
   --btc: oklch(0.95 0.003 250);
-  --neon: oklch(0.6 0.17 45);
+  --brand-xlm: oklch(0.88 0.15 200);
+  --brand-btc: oklch(0.74 0.17 60);
   --xlm: oklch(0.85 0.005 260);
   --acid: oklch(0.78 0.19 150);
   --primary: oklch(0.95 0.003 250);
@@ -97,8 +99,8 @@
 @utility glow-xlm { box-shadow: 0 0 0 1px var(--border); }
 @utility glow-btc { box-shadow: 0 0 0 1.5px var(--foreground); }
 @utility glow-acid { box-shadow: 0 0 0 1.5px var(--acid); }
-@utility text-glow-btc { font-weight: 700; }
-@utility text-glow-xlm { font-weight: 700; }
+@utility text-glow-btc { text-shadow: 0 0 12px color-mix(in oklab, var(--brand-btc) 70%, transparent); }
+@utility text-glow-xlm { text-shadow: 0 0 10px color-mix(in oklab, var(--brand-xlm) 70%, transparent); }
 @utility glitch-hover { transition: transform .2s ease; &:hover { transform: translateY(-1px); } }
 @utility glitch { opacity: 1; }
 @utility btn-cta {
@@ -178,22 +180,3 @@ body::before {
   box-shadow: 0 10px 40px -14px color-mix(in oklab, var(--acid) 22%, transparent);
 }
 
-/* Single-line Michroma wordmark; the orange 2 is italic and bold, same size. */
-.brand-wordmark {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 7px;
-  font-family: var(--font-brand);
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  white-space: nowrap;
-}
-.brand-bridge {
-  color: var(--neon);
-  display: inline-block;
-  transform: skewX(-10deg);
-  -webkit-text-stroke: 1.2px var(--neon);
-}
-.brand-words { display: inline; }
