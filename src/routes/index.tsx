@@ -75,8 +75,8 @@ function Index() {
       <main className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[1.15fr_1fr]">
         <section>
           <div className="mb-4">
-            <h1 className="font-display text-5xl font-normal md:text-6xl">
-              <span className="text-xlm text-glow-xlm">Stellar</span> <span className="text-muted-foreground">→</span> <span className="text-btc text-glow-btc">native Bitcoin</span>
+            <h1 className="font-display text-4xl font-bold md:text-5xl">
+              <span className="text-foreground">Stellar</span> <span className="text-muted-foreground">→</span> <span className="text-foreground">native Bitcoin</span><span className="caret text-acid">_</span>
             </h1>
             <p className="font-mono text-xs text-muted-foreground">
               Mode: <span className={live ? "text-acid" : "text-btc"}>{live ? "Live" : "Simulation"}</span> · 4 liquidity nodes indexed
@@ -94,7 +94,7 @@ function Index() {
                   <option value="XLM">XLM (Native)</option><option value="USDC">USDC (Circle)</option><option value="EURC">EURC</option>
                 </select>
                 <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0.00"
-                  className="w-full min-w-0 bg-transparent text-right font-mono text-3xl text-foreground outline-none" />
+                  className="w-full min-w-0 bg-transparent text-right font-display text-4xl font-bold text-foreground outline-none" />
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex gap-1.5">
@@ -122,7 +122,7 @@ function Index() {
               </div>
               <div className="flex items-baseline justify-between">
                 <span className="font-mono text-xs text-muted-foreground">{quote ? `via ${quote.provider}` : "no route"}</span>
-                <span className="font-mono text-3xl text-btc text-glow-btc">{scanning ? "…" : (quote?.btcOut ?? 0).toFixed(8)} <span className="text-base">BTC</span></span>
+                <span className="font-display text-4xl font-bold text-foreground">{scanning ? "…" : (quote?.btcOut ?? 0).toFixed(8)} <span className="text-base">BTC</span></span>
               </div>
             </div>
 

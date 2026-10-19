@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Instrument Serif", serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --font-sans: "Manrope", sans-serif;
   --radius-sm: var(--radius);
   --radius-md: var(--radius);
@@ -39,10 +39,10 @@
 }
 
 :root {
-  --radius: 1rem;
-  --void: oklch(0.97 0.012 85);
-  --background: oklch(0.975 0.01 85);
-  --foreground: oklch(0.22 0.02 260);
+  --radius: 1.25rem;
+  --void: oklch(0.93 0.004 250);
+  --background: oklch(0.925 0.005 250);
+  --foreground: oklch(0.2 0.005 260);
   --panel: oklch(1 0 0);
   --card: oklch(1 0 0);
   --card-foreground: var(--foreground);
@@ -50,20 +50,20 @@
   --popover-foreground: var(--foreground);
   --btc: oklch(0.68 0.16 55);
   --neon: oklch(0.6 0.17 45);
-  --xlm: oklch(0.42 0.09 250);
-  --acid: oklch(0.55 0.12 155);
-  --primary: oklch(0.22 0.02 260);
+  --xlm: oklch(0.3 0.01 260);
+  --acid: oklch(0.62 0.17 150);
+  --primary: oklch(0.24 0.005 260);
   --primary-foreground: oklch(0.98 0.01 85);
-  --secondary: oklch(0.94 0.015 85);
+  --secondary: oklch(0.95 0.003 250);
   --secondary-foreground: var(--foreground);
-  --muted: oklch(0.945 0.012 85);
-  --muted-foreground: oklch(0.5 0.02 260);
+  --muted: oklch(0.95 0.003 250);
+  --muted-foreground: oklch(0.55 0.008 260);
   --accent: var(--btc);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.58 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.9 0.015 85);
-  --input: oklch(0.9 0.015 85);
+  --border: oklch(0.9 0.004 250);
+  --input: oklch(0.9 0.004 250);
   --ring: var(--btc);
   --shadow-soft: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent), 0 12px 32px -12px color-mix(in oklab, var(--foreground) 14%, transparent);
 }
@@ -87,15 +87,15 @@
 @utility chamfer { border-radius: 1rem; }
 @utility chamfer-sm { border-radius: 0.6rem; }
 @utility panel {
-  border-radius: 1.25rem;
+  border-radius: 1.75rem;
   background: var(--panel);
   box-shadow: 0 0 0 1px var(--border), var(--shadow-soft);
 }
 @utility glow-xlm { box-shadow: 0 0 0 1px var(--border); }
-@utility glow-btc { box-shadow: 0 0 0 1.5px var(--btc); }
+@utility glow-btc { box-shadow: 0 0 0 1.5px var(--foreground); }
 @utility glow-acid { box-shadow: 0 0 0 1.5px var(--acid); }
-@utility text-glow-btc { font-style: italic; }
-@utility text-glow-xlm { font-style: italic; }
+@utility text-glow-btc { font-weight: 700; }
+@utility text-glow-xlm { font-weight: 700; }
 @utility glitch-hover { transition: transform .2s ease; &:hover { transform: translateY(-1px); } }
 @utility glitch { opacity: 1; }
 @utility btn-cta {
@@ -103,7 +103,7 @@
   background: var(--primary);
   color: var(--primary-foreground);
   transition: background .2s ease, transform .2s ease;
-  &:hover { background: var(--btc); transform: translateY(-1px); }
+  &:hover { background: color-mix(in oklab, var(--primary) 85%, var(--acid)); transform: translateY(-1px); }
   &:disabled { background: var(--muted); color: var(--muted-foreground); cursor: not-allowed; transform: none; }
 }
 @utility scan-bar { animation: scan 1.2s ease-in-out infinite; }
