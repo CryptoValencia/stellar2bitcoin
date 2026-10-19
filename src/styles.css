@@ -129,9 +129,9 @@
 @utility panel-aurora { border-radius: 1.75rem; background: var(--gradient-aurora); color: var(--ink-foreground); box-shadow: var(--shadow-soft); }
 @utility pill { border-radius: 999px; padding: .2rem .6rem; font-family: var(--font-mono); font-size: 11px; }
 
-/* Dark ambience (reference: teal glow) */
-:root { --acid: oklch(0.82 0.13 200); --sky: oklch(0.82 0.13 200); }
-body { background-image: radial-gradient(80% 60% at 0% 100%, color-mix(in oklab, var(--acid) 14%, transparent), transparent 70%); background-attachment: fixed; }
+/* Dark ambience (subtle teal, no blue) */
+:root { --acid: oklch(0.8 0.09 185); --sky: oklch(0.8 0.09 185); }
+body { background-image: radial-gradient(70% 55% at 0% 100%, color-mix(in oklab, var(--acid) 8%, transparent), transparent 70%); background-attachment: fixed; }
 
 /* Light theme */
 .light {
@@ -142,8 +142,8 @@ body { background-image: radial-gradient(80% 60% at 0% 100%, color-mix(in oklab,
   --popover: oklch(1 0 0);
   --btc: oklch(0.2 0.005 260);
   --xlm: oklch(0.3 0.008 260);
-  --acid: oklch(0.55 0.11 210);
-  --sky: oklch(0.55 0.11 210);
+  --acid: oklch(0.52 0.09 185);
+  --sky: oklch(0.52 0.09 185);
   --primary: oklch(0.2 0.005 260);
   --primary-foreground: oklch(0.98 0 0);
   --secondary: oklch(0.95 0.003 250);
@@ -170,7 +170,7 @@ body::before {
   mask-image: radial-gradient(70% 60% at 50% 40%, black, transparent);
 }
 @utility panel-receive {
-  background: radial-gradient(70% 55% at 50% 115%, color-mix(in oklab, var(--acid) 32%, transparent), transparent 70%), var(--panel);
-  border-color: color-mix(in oklab, var(--acid) 45%, var(--border));
-  box-shadow: 0 10px 40px -12px color-mix(in oklab, var(--acid) 45%, transparent);
+  background: radial-gradient(65% 50% at 50% 115%, color-mix(in oklab, var(--acid) 16%, transparent), transparent 70%), var(--panel);
+  border-color: color-mix(in oklab, var(--acid) 28%, var(--border));
+  box-shadow: 0 10px 40px -14px color-mix(in oklab, var(--acid) 22%, transparent);
 }
