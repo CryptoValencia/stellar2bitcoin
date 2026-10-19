@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { positiveFinite, quoteMatches } from "./quote-safety";
+import { minimumReceivedBtc, positiveFinite, quoteMatches } from "./quote-safety";
 import { signQuote, verifyQuote } from "./quote-proof.server";
 const input = { from: "USDC", amount: 100, lightning: false };
 const quote = { ...input, id: "verified-quote", settleAmount: "0.00118169", expiresAt: "2026-10-19T18:00:00Z" };
