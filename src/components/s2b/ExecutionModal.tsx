@@ -25,7 +25,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
     if (stage !== 3) return;
     const lines: string[] = [
       `> tx.submit() ledger #${51234000 + Math.floor(Math.random() * 999)} memo=${memo}`,
-      `> [01] ${STEPS[0]}`, `> ${quote.provider} node ack · rate locked`, `> [02] ${STEPS[1]}`,
+      `> [01] ${STEPS[0]}`, `> route ack · rate locked`, `> [02] ${STEPS[1]}`,
       `> constructing PSBT · fee ${Math.ceil(Math.random() * 10 + 8)} sat/vB`, `> [03] ${STEPS[2]} txid=${txid.slice(0, 16)}…`,
       `> awaiting confirmation…`, `> [04] ${STEPS[3]} · ${quote.btcOut.toFixed(8)} BTC delivered`,
     ];
@@ -45,7 +45,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 p-4 backdrop-blur">
       <div className="panel max-h-[92vh] w-full max-w-2xl overflow-y-auto p-6 font-mono">
         <div className="mb-4 flex items-center justify-between">
-          <div className="font-display text-2xl text-btc text-glow-btc">Swap via {quote.provider}</div>
+          <div className="font-display text-2xl text-btc text-glow-btc">Swap in progress</div>
           <button onClick={onClose} className="text-xs text-muted-foreground hover:text-destructive">Cancel</button>
         </div>
         <div className="mb-5 grid grid-cols-3 gap-1">
