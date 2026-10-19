@@ -37,13 +37,14 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
   return (
     <header className="relative z-10 border-b border-border bg-background">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
-        <div className="shrink-0" aria-label="STELLAR2BITCOIN">
-          <span className="flex items-center text-base font-bold uppercase tracking-[0.12em]" aria-label="STELLAR2BITCOIN">
-            <span className="text-foreground">Stellar</span>
-            <span className="text-muted-foreground">2</span>
-            <span className="text-acid">Bitcoin</span>
-            <span className="cursor-blink ml-1 inline-block h-[1.1em] w-[0.55em] bg-acid" />
-          </span>
+        <div className="shrink-0">
+          <div className="flex items-center gap-2 text-lg font-black tracking-wider" aria-label="STELLAR2BITCOIN">
+            <span className="text-brand-xlm text-glow-xlm">STELLAR</span><span className="text-foreground">2</span><span className="text-brand-btc text-glow-btc">BITCOIN</span>
+            <span className="font-mono text-xs font-normal text-muted-foreground">// S2B_PROTOCOL v2.6</span>
+          </div>
+          <div className="font-mono text-[10px] text-acid">
+            <span className="caret mr-1 inline-block h-1.5 w-1.5 bg-acid" />[SYS_ONLINE: SOROBAN <-> BTC_MAINNET]
+          </div>
         </div>
         
         <button onClick={() => setLight(!light)} aria-label="Toggle theme" className="ml-auto rounded-[8px] bg-muted px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
