@@ -50,15 +50,13 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
             <span className="mr-1 inline-block h-1.5 w-1.5 bg-acid caret" />All systems operational
           </div>
         </div>
-        <div className="hidden flex-1 overflow-hidden font-mono text-xs text-muted-foreground md:block">
-          <div className="flex w-max gap-8 ticker-track whitespace-nowrap">{items}{items}</div>
-        </div>
+        
         {wallet ? (
           <button onClick={() => onConnect(null)} className="ml-auto chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
           </button>
         ) : (
-          <button onClick={() => setOpen(true)} className="ml-auto btn-cta px-5 py-2.5 font-sans text-sm font-semibold">
+          <button id="connect-wallet" onClick={() => setOpen(true)} className="ml-auto btn-cta px-5 py-2.5 font-sans text-sm font-semibold">
             Connect wallet
           </button>
         )}
