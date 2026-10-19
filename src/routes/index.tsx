@@ -75,7 +75,7 @@ function Index() {
     <div className="relative flex min-h-screen flex-col">
       <Hud wallet={wallet} onConnect={setWallet} />
       <main className="relative z-10 mx-auto w-full max-w-md flex-1 px-4 py-10">
-        <h1 className="mb-6 text-center font-display text-3xl font-bold">XLM → BTC<span className="caret text-acid">_</span></h1>
+        <h1 className="mb-6 text-center font-display text-3xl font-bold">{token} → BTC<span className="caret text-acid">_</span></h1>
 
         <div className="space-y-2">
           {/* Send */}
