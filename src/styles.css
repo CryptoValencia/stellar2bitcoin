@@ -169,3 +169,8 @@ body::before {
   background-size: 40px 40px;
   mask-image: radial-gradient(70% 60% at 50% 40%, black, transparent);
 }
+@utility panel-receive {
+  background: radial-gradient(70% 55% at 50% 115%, color-mix(in oklab, var(--acid) 32%, transparent), transparent 70%), var(--panel);
+  border-color: color-mix(in oklab, var(--acid) 45%, var(--border));
+  box-shadow: 0 10px 40px -12px color-mix(in oklab, var(--acid) 45%, transparent);
+}

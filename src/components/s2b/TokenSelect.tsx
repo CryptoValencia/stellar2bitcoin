@@ -24,7 +24,7 @@ export function TokenSelect({ value, onChange }: { value: Token; onChange: (t: T
   }, []);
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-2.5 rounded-full border border-border bg-muted py-1.5 pl-1.5 pr-4 text-xl font-bold">
         <TokenLogo symbol={value} size={32} /> {value} <span className="text-sm text-muted-foreground">▾</span>
       </button>
       {open && (

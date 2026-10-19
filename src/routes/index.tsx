@@ -99,7 +99,7 @@ function Index() {
           </div>
 
           {/* Buy */}
-          <div className="panel p-5">
+          <div className="panel panel-receive p-5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Buy</span>
               <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
@@ -112,7 +112,7 @@ function Index() {
               </div>
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
-              <span className="flex shrink-0 items-center gap-2.5 text-2xl font-bold tracking-tight"><TokenLogo symbol="BTC" size={32} /> BTC</span>
+              <span className="flex shrink-0 items-center gap-2.5 rounded-full border border-border bg-muted py-1.5 pl-1.5 pr-4 text-xl font-bold"><TokenLogo symbol="BTC" size={32} /> BTC</span>
               <div className={`min-w-0 truncate text-right text-4xl font-bold tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
                 {quote && !scanning ? quote.btcOut.toFixed(8) : "0"}
               </div>
