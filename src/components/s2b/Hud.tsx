@@ -43,7 +43,7 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
             <span className="font-mono text-xs font-normal text-muted-foreground">// S2B_PROTOCOL v2.6</span>
           </div>
           <div className="font-mono text-[10px] text-acid">
-            <span className="caret mr-1 inline-block h-1.5 w-1.5 bg-acid" />[SYS_ONLINE: SOROBAN <-> BTC_MAINNET]
+            <span className="caret mr-1 inline-block h-1.5 w-1.5 bg-acid" />[SYS_ONLINE: SOROBAN {'<>'} BTC_MAINNET]
           </div>
         </div>
         
