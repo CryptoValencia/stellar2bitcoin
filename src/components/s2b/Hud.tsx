@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { BTC_USD, USD_PRICE } from "@/services/aggregatorService";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { connectWallet, WALLET_NAMES, type Wallet, type WalletName } from "@/services/walletService";
@@ -20,19 +19,9 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
   const [open, setOpen] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [rate, setRate] = useState(USD_PRICE.XLM / BTC_USD);
   const [light, setLight] = useState(false);
   useEffect(() => { setLight(localStorage.getItem("s2b_theme") === "light"); }, []);
   useEffect(() => { document.documentElement.classList.toggle("light", light); localStorage.setItem("s2b_theme", light ? "light" : "dark"); }, [light]);
-  const [fees, setFees] = useState({ f: 18, m: 11, s: 5 });
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setRate((r) => r * (1 + (Math.random() - 0.5) * 0.002));
-      setFees((f) => ({ f: Math.max(8, f.f + Math.round(Math.random() * 4 - 2)), m: Math.max(4, f.m + Math.round(Math.random() * 2 - 1)), s: Math.max(1, f.s + Math.round(Math.random() * 2 - 1)) }));
-    }, 2500);
-    return () => clearInterval(t);
-  }, []);
 
   const connect = async (name: WalletName) => {
     setConnecting(name);
@@ -44,17 +33,6 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
       setError(err instanceof Error ? err.message : "Connection cancelled or unavailable. Please try again.");
     } finally { setConnecting(null); }
   };
-
-  const items = (
-    <>
-      <span>XLM/BTC <b className="text-xlm">{(rate * 1e8).toFixed(1)} sats</b></span>
-      <span>Stellar ledger <b className="text-acid">~5s</b></span>
-      <span>BTC fees · fast <b className="text-btc">{fees.f} sat/vB</b></span>
-      <span>medium <b className="text-btc">{fees.m} sat/vB</b></span>
-      <span>slow <b className="text-btc">{fees.s} sat/vB</b></span>
-      <span>BTC/USD <b className="text-foreground">${BTC_USD.toLocaleString()}</b></span>
-    </>
-  );
 
   return (
     <header className="relative z-10 border-b border-border bg-background">

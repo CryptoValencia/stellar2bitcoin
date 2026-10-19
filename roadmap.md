@@ -22,3 +22,6 @@
 - [x] Guardar la clave de SideShift cifrada y usarla para cotizar en real (probado: 1000 XLM → 0.00210467 BTC real)
 - [x] Cards: Sell/Buy → From/To
 - [ ] Fuente: aún sin elegir (Space Mono actual; opciones mostradas con el wordmark)
+- [x] Integrar órdenes de FixedFloat y ChangeNOW (precios reales de los 3 comprobados)
+- [x] Tarjeta BTC igual que la de XLM (sin brillo)
+- [ ] Proponer nuevas fuentes
