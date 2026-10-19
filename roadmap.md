@@ -25,3 +25,5 @@
 - [x] Integrar órdenes de FixedFloat y ChangeNOW (precios reales de los 3 comprobados)
 - [x] Tarjeta BTC igual que la de XLM (sin brillo)
 - [x] Aplicar título compacto en dos líneas con un 2 naranja como puente
+- [x] Desplegable de detalles con el mínimo garantizado (minimum received) y el precio bloqueado
+- [x] Tiempo: expresado como llegada a la wallet, con estimación real (no 10–30 min · 1 confirmación)

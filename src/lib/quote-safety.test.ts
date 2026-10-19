@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { positiveFinite, quoteMatches } from "./quote-safety";
+import { minimumReceivedBtc, positiveFinite, quoteMatches } from "./quote-safety";
 import { signQuote, verifyQuote } from "./quote-proof.server";
 const input = { from: "USDC", amount: 100, lightning: false };
 const quote = { ...input, id: "verified-quote", settleAmount: "0.00118169", expiresAt: "2026-10-19T18:00:00Z" };
@@ -23,5 +23,10 @@ describe("quote integrity", () => {
     expect(await verifyQuote(quote, signature, input, "test-only-signing-secret", now)).toBe(true);
     expect(await verifyQuote({ ...quote, settleAmount: "1" }, signature, input, "test-only-signing-secret", now)).toBe(false);
     expect(await verifyQuote({ ...quote, id: "different" }, signature, input, "test-only-signing-secret", now)).toBe(false);
+  });
+  it("shows the provider's guaranteed amount as the minimum received", () => {
+    expect(minimumReceivedBtc(0.00118169, quote)).toBe("0.00118169");
+    expect(minimumReceivedBtc(0.00118169)).toBe("0.00118169");
+    expect(minimumReceivedBtc(0.5, { ...quote, settleAmount: "0" })).toBe("0.50000000");
   });
 });
