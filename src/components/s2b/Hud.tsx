@@ -3,7 +3,18 @@ import { BTC_USD, USD_PRICE } from "@/services/aggregatorService";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { connectWallet, WALLET_NAMES, type Wallet, type WalletName } from "@/services/walletService";
+import freighterLogo from "@/assets/wallet-freighter.svg.asset.json";
+import lobstrLogo from "@/assets/wallet-lobstr.png.asset.json";
+import xbullLogo from "@/assets/wallet-xbull.png.asset.json";
+import albedoLogo from "@/assets/wallet-albedo.svg.asset.json";
 export type { Wallet } from "@/services/walletService";
+
+const walletLogos: Record<WalletName, string> = {
+  Freighter: freighterLogo.url,
+  Lobstr: lobstrLogo.url,
+  xBull: xbullLogo.url,
+  Albedo: albedoLogo.url,
+};
 
 export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (w: Wallet | null) => void }) {
   const [open, setOpen] = useState(false);
@@ -79,7 +90,10 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
               {WALLET_NAMES.map((w) => (
                 <Button variant="secondary" key={w} disabled={!!connecting} onClick={() => connect(w)}
                   className="h-12 justify-between bg-muted px-4 font-mono text-sm">
-                  <span>{w}</span>
+                  <span className="flex items-center gap-3">
+                    <img src={walletLogos[w]} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />
+                    {w}
+                  </span>
                   <span className="text-xs text-muted-foreground">{connecting === w ? "Awaiting approval…" : "→"}</span>
                 </Button>
               ))}

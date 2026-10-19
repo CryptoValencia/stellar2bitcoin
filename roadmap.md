@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Añadir logos a las opciones de Connect wallet
-- [ ] Verificar tokens por proveedor y explicar integraciones pendientes
+- [x] Añadir logos a las opciones de Connect wallet
+- [x] Verificar tokens por proveedor y explicar integraciones pendientes
 
 - [x] Corregir Connect wallet: autorización real, saldo real y errores claros (tests y ausencia de extensión verificados)
 - [x] Integrar cotizaciones y código de órdenes SideShift según su documentación oficial
