@@ -130,7 +130,7 @@ function Index() {
             <div className="mt-5">
               <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest">
                 <span className="text-muted-foreground">{net === "lightning" ? "LIGHTNING INVOICE" : "BTC RECEIVING ADDRESS"}</span>
-                {addr !== "empty" && <span className={ADDR_LABEL[addr][1]}>[{ADDR_LABEL[addr][0]}]</span>}
+                {addr !== "empty" && <span className={ADDR_LABEL[addr]?.[1]}>[{ADDR_LABEL[addr]?.[0]}]</span>}
               </div>
               <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "lnbc…" : "bc1p… / bc1q…"}
                 className={`chamfer-sm w-full bg-background px-4 py-3 font-mono text-sm outline-none ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:glow-btc"}`} />

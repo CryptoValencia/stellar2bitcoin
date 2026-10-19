@@ -39,7 +39,7 @@ function simulate(id: RouteId, from: Token, amount: number): Quote {
     fixedfloat: { provider: "FixedFloat", tagline: "Lightning & mainnet node · 0.5% fee", badge: "FASTEST", eta: 2, pct: 0.005, flat: 0.9, ln: true },
     changenow: { provider: "ChangeNOW", tagline: "Deep liquidity aggregator", badge: "BEST RETURN", eta: 7, pct: usd > 5000 ? 0.004 : 0.0075, flat: 1.5, ln: false },
     cctp: { provider: "CCTP + Chainflip", tagline: "Circle CCTP burn → Chainflip native BTC", badge: "100% DEFI", eta: 12, pct: 0.0035, flat: 2.4, ln: false },
-  }[id] as const;
+  }[id];
   const feeUsd = usd * cfg.pct + cfg.flat;
   const btcOut = Math.max(0, ((usd - feeUsd) / BTC_USD) * jitter());
   return {

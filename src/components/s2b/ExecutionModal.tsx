@@ -19,11 +19,11 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
   const txid = useMemo(() => hex(64), []);
 
   useEffect(() => { const t = setInterval(() => setSecs((s) => Math.max(0, s - 1)), 1000); return () => clearInterval(t); }, []);
-  useEffect(() => { if (stage === 1) { const t = setTimeout(() => setStage(2), 1800); return () => clearTimeout(t); } }, [stage]);
+  useEffect(() => { if (stage !== 1) return; const t = setTimeout(() => setStage(2), 1800); return () => clearTimeout(t); }, [stage]);
 
   useEffect(() => {
     if (stage !== 3) return;
-    const lines = [
+    const lines: string[] = [
       `> tx.submit() ledger #${51234000 + Math.floor(Math.random() * 999)} memo=${memo}`,
       `> [01] ${STEPS[0]}`, `> ${quote.provider} node ack · rate locked`, `> [02] ${STEPS[1]}`,
       `> constructing PSBT · fee ${Math.ceil(Math.random() * 10 + 8)} sat/vB`, `> [03] ${STEPS[2]} txid=${txid.slice(0, 16)}…`,
@@ -31,8 +31,8 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
     ];
     let i = 0;
     const t = setInterval(() => {
-      setLogs((l) => [...l, lines[i]]);
-      const m = lines[i].match(/\[0(\d)\]/); if (m) setProgress(Number(m[1]));
+      const line = lines[i] ?? ""; setLogs((l) => [...l, line]);
+      const m = line.match(/\[0(\d)\]/); if (m) setProgress(Number(m[1]));
       i++; if (i >= lines.length) clearInterval(t);
     }, 1100);
     return () => clearInterval(t);
