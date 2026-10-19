@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
 import { getMarketPrices, type MarketPrices } from "@/lib/market.functions";
 import { chooseExecutableQuotes, orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
-import { quoteMatches } from "@/lib/quote-safety";
+import { minimumReceivedBtc, quoteMatches } from "@/lib/quote-safety";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
@@ -51,6 +51,7 @@ function Index() {
   const [orderError, setOrderError] = useState("");
   const [requestId, setRequestId] = useState<string | null>(null);
   const [prices, setPrices] = useState<MarketPrices | null>(null);
+  const [more, setMore] = useState(false);
   const createOrder = useServerFn(createSwapOrder);
   const recoverOrder = useServerFn(getSwapOrder);
   const loadPrices = useServerFn(getMarketPrices);
@@ -189,7 +190,17 @@ function Index() {
           <Detail k="Rate" v={quote && !scanning && amt && prices
             ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.btcOut / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
             : scanning ? "Updating…" : "—"} />
-          <Detail k="Fees" v="Included in price" />
+          <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
+            className="flex w-full items-center justify-between text-sm">
+            <span className="text-muted-foreground">Fees included in price</span>
+            <span className={`text-muted-foreground transition-transform ${more ? "rotate-180" : ""}`}>▾</span>
+          </button>
+          {more && (
+            <div className="space-y-2 text-sm">
+              <Detail k="Minimum received" v={quote ? `${minimumReceivedBtc(quote.btcOut, quote.snapshot)} BTC` : "—"} />
+              <Detail k="Price locked until" v={quote?.snapshot ? new Date(quote.snapshot.expiresAt).toLocaleTimeString() : "—"} />
+            </div>
+          )}
           <Detail k="Time" v={net === "lightning" ? "≈ 1–5 min" : "≈ 10–30 min · 1 confirmation"} />
         </div>
 

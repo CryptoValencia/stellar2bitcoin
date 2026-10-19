@@ -24,4 +24,9 @@ describe("quote integrity", () => {
     expect(await verifyQuote({ ...quote, settleAmount: "1" }, signature, input, "test-only-signing-secret", now)).toBe(false);
     expect(await verifyQuote({ ...quote, id: "different" }, signature, input, "test-only-signing-secret", now)).toBe(false);
   });
+  it("shows the provider's guaranteed amount as the minimum received", () => {
+    expect(minimumReceivedBtc(0.00118169, quote)).toBe("0.00118169");
+    expect(minimumReceivedBtc(0.00118169)).toBe("0.00118169");
+    expect(minimumReceivedBtc(0.5, { ...quote, settleAmount: "0" })).toBe("0.50000000");
+  });
 });
