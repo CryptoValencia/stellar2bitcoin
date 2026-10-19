@@ -7,9 +7,13 @@ export const getSideShiftQuote = createServerFn({ method: "POST" })
     const apiKey = process.env["SIDESHIFT_API_KEY"];
     if (!apiKey) return { ok: false as const, error: "not_configured" };
     try {
-      const { requestQuote, clientIp } = await import("./sideshift.server");
+      const { requestQuote, clientIp, sessionHash } = await import("./sideshift.server");
+      const hash = await sessionHash(true);
+      if (!hash) throw new Error("Couldn't verify the quote session.");
       const quote = await requestQuote(data, apiKey, clientIp());
-      return { ok: true as const, btcOut: Number(quote.settleAmount) };
+      const { signQuote } = await import("./quote-proof.server");
+      const quoteSignature = await signQuote(quote, `${apiKey}:${hash}`);
+      return { ok: true as const, btcOut: Number(quote.settleAmount), quote, quoteSignature };
     } catch (error) {
       return { ok: false as const, error: error instanceof Error ? error.message : "Price unavailable" };
     }
@@ -21,7 +25,7 @@ export const createSwapOrder = createServerFn({ method: "POST" })
     try {
       const secret = process.env["SIDESHIFT_API_KEY"];
       if (!secret) throw new Error("Swap service isn't configured.");
-      const { clientIp, sessionHash, sideShiftRequest, requestQuote, parseOrder } = await import("./sideshift.server");
+      const { clientIp, sessionHash, sideShiftRequest, parseOrder } = await import("./sideshift.server");
       const ip = clientIp(true);
       const hash = await sessionHash(true);
       if (!hash) throw new Error("Couldn't start your swap session.");
@@ -32,7 +36,9 @@ export const createSwapOrder = createServerFn({ method: "POST" })
       if (existing.data) throw new Error("This request is already being processed. Please wait; don't send funds yet.");
       const permissions = await sideShiftRequest("/permissions", secret, ip) as { createShift: boolean };
       if (!permissions.createShift) throw new Error("Swaps aren't available in your location.");
-      const quote = await requestQuote(data, secret, ip);
+      const { verifyQuote } = await import("./quote-proof.server");
+      if (!await verifyQuote(data.quote, data.quoteSignature, data, `${secret}:${hash}`)) throw new Error("Price changed or expired. Refresh the quote before confirming.");
+      const quote = data.quote;
       const claim = await supabaseAdmin.from("swap_orders").insert({ session_hash: hash, request_id: data.requestId });
       if (claim.error) throw new Error("This request is already being processed. Please wait.");
       const { AFFILIATE_ID } = await import("./sideshift-schema");
