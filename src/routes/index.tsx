@@ -70,23 +70,23 @@ function Index() {
     : addr === "empty" || addr === "invalid" ? "ENTER VALID DESTINATION" : !quote ? "AWAITING ROUTE" : null;
 
   const [showRoutes, setShowRoutes] = useState(false);
-  const pill = (on: boolean) => `flex-1 rounded-full py-2 text-sm transition ${on ? "bg-panel font-semibold shadow-sm" : "text-muted-foreground"}`;
+  const pill = (on: boolean) => `flex-1 rounded-[7px] py-1.5 text-xs transition ${on ? "bg-panel font-medium shadow-sm" : "text-muted-foreground"}`;
 
   return (
     <div className="relative flex min-h-screen flex-col">
       <Hud wallet={wallet} onConnect={setWallet} />
       <main className="relative z-10 mx-auto w-full max-w-md flex-1 px-4 py-10">
-        <h1 className="mb-6 text-center font-display text-3xl font-bold">{token} → BTC<span className="caret text-acid">_</span></h1>
+        <h1 className="mb-4 text-sm font-medium text-muted-foreground">Swap {token} → BTC</h1>
 
         <div className="space-y-2">
           {/* Send */}
-          <div className="panel p-6">
+          <div className="panel p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">You send</span>
               <TokenSelect value={token} onChange={setToken} />
             </div>
             <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0"
-              className="mt-3 w-full bg-transparent font-display text-5xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/40" />
+              className="mt-3 w-full bg-transparent font-display text-4xl font-medium tracking-tight outline-none placeholder:text-muted-foreground/40" />
             <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-muted-foreground">
               <span>≈ ${(amt * USD_PRICE[token]).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               {wallet && <button onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))} className="hover:text-foreground">Balance {balance.toLocaleString()} · <b>MAX</b></button>}
@@ -94,26 +94,26 @@ function Index() {
           </div>
 
           {/* Receive */}
-          <div className="panel p-6">
+          <div className="panel p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">You receive</span>
-              <span className="flex items-center gap-2 rounded-full bg-muted py-1.5 pl-1.5 pr-3 font-mono text-xs font-medium"><TokenLogo symbol="BTC" /> BTC</span>
+              <span className="flex items-center gap-2 rounded-[8px] bg-muted py-1 pl-1 pr-2.5 text-xs font-medium"><TokenLogo symbol="BTC" /> BTC</span>
             </div>
-            <div className={`mt-3 font-display text-5xl font-bold tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
+            <div className={`mt-3 font-display text-4xl font-medium tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
               {quote && !scanning ? quote.btcOut.toFixed(8) : "0"}
             </div>
-            <div className="mt-4 flex rounded-full bg-muted p-1">
+            <div className="mt-4 flex rounded-[10px] bg-muted p-1">
               <button onClick={() => { setNet("mainnet"); setDest(""); }} className={pill(net === "mainnet")}>On-chain</button>
-              <button onClick={() => { setNet("lightning"); setDest(""); }} className={pill(net === "lightning")}>⚡ Lightning</button>
+              <button onClick={() => { setNet("lightning"); setDest(""); }} className={pill(net === "lightning")}>Lightning</button>
             </div>
             <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "Paste Lightning invoice" : "Paste your BTC address"}
-              className={`mt-3 w-full rounded-2xl bg-muted px-4 py-3 font-mono text-sm outline-none ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground"}`} />
-            {addr !== "empty" && <div className={`mt-2 font-mono text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{addr === "invalid" ? "✕" : "✓"} {ADDR_LABEL[addr]?.[0]}</div>}
+              className={`mt-3 w-full rounded-[10px] bg-muted px-3 py-2.5 text-xs outline-none ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground"}`} />
+            {addr !== "empty" && <div className={`mt-2 font-mono text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{ADDR_LABEL[addr]?.[0]}</div>}
           </div>
 
           {/* Route summary */}
           {quote && !scanning && (
-            <div className="panel px-6 py-4">
+            <div className="panel px-5 py-3">
               <button onClick={() => setShowRoutes(!showRoutes)} className="flex w-full items-center justify-between text-sm">
                 <span className="text-muted-foreground">Route</span>
                 <span className="font-mono">{quote.provider} · ~{quote.etaMin} min · ${quote.feeUsd.toFixed(2)} fee <span className="text-muted-foreground">{showRoutes ? "▴" : "▾"}</span></span>
@@ -131,10 +131,10 @@ function Index() {
               )}
             </div>
           )}
-          {scanning && <div className="text-center font-mono text-xs text-muted-foreground">Finding best rate<span className="caret">...</span></div>}
+          {scanning && <div className="text-center font-mono text-xs text-muted-foreground">Finding best rate…</div>}
 
           <button disabled={!!blocker && !!wallet} onClick={() => (wallet ? setExecuting(true) : document.getElementById("connect-wallet")?.click())}
-            className="btn-cta !mt-4 w-full py-5 text-base font-semibold">
+            className="btn-cta !mt-3 w-full py-3.5 text-sm font-medium">
             {!wallet ? "Connect wallet" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
           </button>
           <p className="text-center font-mono text-[10px] text-muted-foreground">{live ? "Live" : "Simulation mode"} · non-custodial</p>

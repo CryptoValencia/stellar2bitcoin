@@ -14,8 +14,8 @@ export const getFixedFloatQuote = createServerFn({ method: "POST" })
     return d;
   })
   .handler(async ({ data }) => {
-    const apiKey = process.env.FIXEDFLOAT_API_KEY;
-    const secret = process.env.FIXEDFLOAT_API_SECRET;
+    const apiKey = process.env['FIXEDFLOAT_API_KEY'];
+    const secret = process.env['FIXEDFLOAT_API_SECRET'];
     if (!apiKey || !secret) return { ok: false as const, error: "not_configured" };
     const body = JSON.stringify({
       type: data.fixed ? "fixed" : "float",

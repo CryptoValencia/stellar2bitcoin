@@ -5,9 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-sans: "Manrope", sans-serif;
+  --font-display: "Geist Mono", ui-monospace, monospace;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-sans: "Geist Mono", ui-monospace, monospace;
   --radius-sm: var(--radius);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);
@@ -41,7 +41,7 @@
 :root {
   --radius: 1.25rem;
   --void: oklch(0.93 0.004 250);
-  --background: oklch(0.925 0.005 250);
+  --background: oklch(0.955 0.003 90);
   --foreground: oklch(0.2 0.005 260);
   --panel: oklch(1 0 0);
   --card: oklch(1 0 0);
@@ -87,9 +87,9 @@
 @utility chamfer { border-radius: 1rem; }
 @utility chamfer-sm { border-radius: 0.6rem; }
 @utility panel {
-  border-radius: 1.75rem;
+  border-radius: 14px;
   background: var(--panel);
-  box-shadow: 0 0 0 1px var(--border), var(--shadow-soft);
+  box-shadow: 0 0 0 1px var(--border);
 }
 @utility glow-xlm { box-shadow: 0 0 0 1px var(--border); }
 @utility glow-btc { box-shadow: 0 0 0 1.5px var(--foreground); }
@@ -99,7 +99,7 @@
 @utility glitch-hover { transition: transform .2s ease; &:hover { transform: translateY(-1px); } }
 @utility glitch { opacity: 1; }
 @utility btn-cta {
-  border-radius: 999px;
+  border-radius: 12px;
   background: var(--primary);
   color: var(--primary-foreground);
   transition: background .2s ease, transform .2s ease;

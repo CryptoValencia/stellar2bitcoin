@@ -24,14 +24,14 @@ export function TokenSelect({ value, onChange }: { value: Token; onChange: (t: T
   }, []);
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-full bg-muted py-1.5 pl-1.5 pr-3 font-mono text-xs font-medium">
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-[8px] bg-muted py-1 pl-1 pr-2.5 text-xs font-medium">
         <TokenLogo symbol={value} /> {value} <span className="text-muted-foreground">▾</span>
       </button>
       {open && (
         <div className="panel absolute right-0 z-20 mt-2 w-52 p-1.5">
           {OPTIONS.map((o) => (
             <button key={o.v} onClick={() => { onChange(o.v); setOpen(false); }}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left ${o.v === value ? "bg-muted" : "hover:bg-muted"}`}>
+              className={`flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-left ${o.v === value ? "bg-muted" : "hover:bg-muted"}`}>
               <TokenLogo symbol={o.v} size={24} />
               <span className="flex flex-col"><span className="font-mono text-xs font-semibold">{o.v}</span><span className="text-[11px] text-muted-foreground">{o.label}</span></span>
             </button>
