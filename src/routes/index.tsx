@@ -137,7 +137,7 @@ function Index() {
             className="btn-cta !mt-3 w-full py-3.5 text-sm font-medium">
             {!wallet ? "Connect wallet" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
           </button>
-          <p className="text-center font-mono text-[10px] text-muted-foreground">{live ? "Live" : "Simulation mode"} · non-custodial</p>
+          <p className="text-center font-mono text-[10px] text-muted-foreground">{quote?.live ? "Live price" : "Estimated price"} · non-custodial</p>
         </div>
       </main>
       <DevDrawer onChange={() => setNonce((n) => n + 1)} />
