@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
 import { getMarketPrices, type MarketPrices } from "@/lib/market.functions";
 import { chooseExecutableQuotes, orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
-import { minimumReceivedBtc, quoteMatches } from "@/lib/quote-safety";
+import { lockCountdown, quoteMatches } from "@/lib/quote-safety";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
@@ -197,8 +197,10 @@ function Index() {
           </button>
           {more && (
             <div className="space-y-2 text-sm">
-              <Detail k="Minimum received" v={quote ? `${minimumReceivedBtc(quote.btcOut, quote.snapshot)} BTC` : "—"} />
-              <Detail k="Price locked until" v={quote?.snapshot ? new Date(quote.snapshot.expiresAt).toLocaleTimeString() : "—"} />
+              <Detail k="Price locked" v={quote?.snapshot ? lockCountdown(quote.snapshot.expiresAt, now) : "—"} />
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                The BTC amount above is fixed for that time. It does not move with the market, and nothing is deducted when you pay.
+              </p>
             </div>
           )}
           <Detail k="Arrives" v={net === "lightning" ? "≈ 1–3 min to your wallet" : "≈ 5–10 min to your wallet"} />
