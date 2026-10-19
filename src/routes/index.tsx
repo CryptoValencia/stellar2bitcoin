@@ -88,8 +88,8 @@ function Index() {
 
   const startSwap = async () => {
     if (!wallet) { document.getElementById("connect-wallet")?.click(); return; }
-    if (blocker || creating) return;
     if (order && !orderIsFinal(order.status)) { setExecuting(true); return; }
+    if (blocker || creating) return;
     setCreating(true); setOrderError("");
     const id = requestId ?? crypto.randomUUID();
     setRequestId(id);

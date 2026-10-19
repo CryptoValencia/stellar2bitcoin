@@ -36,10 +36,12 @@
   --color-acid: var(--acid);
   --color-void: var(--void);
   --color-panel: var(--panel);
+  --color-qr-surface: var(--qr-surface);
 }
 
 :root {
   --radius: 1.25rem;
+  --qr-surface: oklch(1 0 0);
   --void: oklch(0.12 0.003 260);
   --background: oklch(0.13 0.003 260);
   --foreground: oklch(0.95 0.003 250);

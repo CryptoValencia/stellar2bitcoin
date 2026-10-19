@@ -62,7 +62,7 @@ export function ExecutionModal({ order: initial, onClose }: { order: SwapOrder; 
       </div>
       {depositAllowed ? <>
         <p className="text-xs text-muted-foreground">Send the exact amount and memo before the timer expires.</p>
-        <div className="flex justify-center"><div className="bg-foreground p-3"><QRCodeSVG value={uri.toString()} size={160} /></div></div>
+        <div className="flex justify-center"><div className="bg-qr-surface p-3"><QRCodeSVG value={uri.toString()} size={160} /></div></div>
         <div className="space-y-3">
           {[["Address", order.depositAddress], ["Amount", order.depositAmount], ...(order.depositMemo ? [["Memo", order.depositMemo]] : [])].map(([label, value]) => label && value ? <div key={label} className="flex items-center gap-2">
             <div className="min-w-0 flex-1"><div className="text-[11px] text-muted-foreground">{label}</div><div className="select-all break-all text-xs">{value}</div></div>
