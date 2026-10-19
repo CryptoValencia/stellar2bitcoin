@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
+import { getMarketPrices, type MarketPrices } from "@/lib/market.functions";
 import { chooseExecutableQuotes, orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
 import { quoteMatches } from "@/lib/quote-safety";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
