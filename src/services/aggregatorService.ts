@@ -10,9 +10,9 @@ export interface Quote {
   provider: string;
   tagline: string;
   badge: "BEST RETURN" | "FASTEST" | "ZERO KYC" | "100% DEFI";
-  etaMin: number;
-  feeUsd: number;
-  feeBtc: number;
+  etaMin: number | null;
+  feeUsd: number | null;
+  feeBtc: number | null;
   btcOut: number;
   live: boolean;
   lightning: boolean;
@@ -54,7 +54,7 @@ export async function fetchSideShiftQuote(fromToken: Token, amount: number, net:
   const sim = simulate("sideshift", fromToken, amount);
   try {
     const r = await getSideShiftQuote({ data: { from: fromToken, amount, lightning: net === "lightning" } });
-    if (r.ok) return { ...sim, btcOut: r.btcOut, live: true };
+    if (r.ok) return { ...sim, btcOut: r.btcOut, live: true, feeUsd: null, feeBtc: null, etaMin: null };
   } catch { /* fall back */ }
   return sim;
 }
@@ -66,7 +66,7 @@ export async function fetchChangeNowQuote(fromToken: Token, amount: number): Pro
       const r = await fetch(`https://api.changenow.io/v2/exchange/estimated-amount?fromCurrency=${fromToken.toLowerCase()}&toCurrency=btc&fromAmount=${amount}&fromNetwork=xlm&toNetwork=btc&flow=standard`, { headers: { "x-changenow-api-key": key } });
       if (r.ok) {
         const j = await r.json();
-        return { ...simulate("changenow", fromToken, amount), btcOut: Number(j.toAmount), live: true };
+        return { ...simulate("changenow", fromToken, amount), btcOut: Number(j.toAmount), live: true, feeUsd: null, feeBtc: null, etaMin: null };
       }
     } catch { /* fall back */ }
   }
@@ -78,7 +78,7 @@ export async function fetchFixedFloatQuote(fromToken: Token, amount: number, net
   const sim = simulate("fixedfloat", fromToken, amount);
   try {
     const r = await getFixedFloatQuote({ data: { from: fromToken, amount, lightning: net === "lightning", fixed: true } });
-    if (r.ok) return { ...sim, btcOut: r.btcOut, live: true };
+    if (r.ok) return { ...sim, btcOut: r.btcOut, live: true, feeUsd: null, feeBtc: null, etaMin: null };
   } catch { /* fall back */ }
   return sim;
 }

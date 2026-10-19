@@ -8,7 +8,7 @@ import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
 import {
-  fetchAllQuotes, isLiveMode, BTC_USD, validateDestination, USD_PRICE,
+  fetchAllQuotes, isLiveMode, validateDestination,
   type BtcNet, type Quote, type RouteId, type Token,
 } from "@/services/aggregatorService";
 
@@ -81,7 +81,7 @@ function Index() {
 
   const quote = quotes.find((q) => q.id === selected) ?? null;
   const addr = validateDestination(dest, net);
-  const fastest = useMemo(() => quotes.reduce<Quote | null>((a, b) => (!a || b.etaMin < a.etaMin ? b : a), null), [quotes]);
+  const fastest = useMemo(() => quotes.reduce<Quote | null>((a, b) => (b.etaMin !== null && (!a || a.etaMin === null || b.etaMin < a.etaMin) ? b : a), null), [quotes]);
 
   const blocker = !wallet ? "CONNECT WALLET FIRST" : amt <= 0 ? "ENTER AMOUNT" : amt > balance ? "INSUFFICIENT BALANCE"
     : addr === "empty" || addr === "invalid" ? "ENTER VALID DESTINATION" : !quote ? (scanning ? "FINDING PRICE" : "SWAP UNAVAILABLE") : null;
@@ -122,7 +122,6 @@ function Index() {
             <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
               <button disabled={!wallet} onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))}
                 className="rounded-full border border-border px-3 py-1 font-bold text-foreground transition hover:bg-muted disabled:opacity-40">MAX</button>
-              <span>~ ${(amt * USD_PRICE[token]).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
             </div>
           </div>
 
@@ -149,9 +148,6 @@ function Index() {
                 {quote && !scanning ? quote.btcOut.toFixed(8) : "0"}
               </div>
             </div>
-            <div className="mt-1 text-right text-xs text-muted-foreground">
-              {quote && !scanning ? `~ $${(quote.btcOut * BTC_USD).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "\u00a0"}
-            </div>
             <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "Lightning invoice (lnbc…)" : "Your BTC address (bc1…)"}
               className={`mt-4 w-full rounded-[10px] bg-muted px-3 py-3 text-xs outline-none transition ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground/40"}`} />
             {addr !== "empty" && <div className={`mt-2 text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{ADDR_LABEL[addr]?.[0]}</div>}
@@ -160,7 +156,7 @@ function Index() {
 
         {/* Details */}
         <div className="mt-5 space-y-3 px-1 text-sm">
-          {quotes.length > 1 && (
+          {quotes.length > 1 && fastest && (
             <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
               {([["cheap", "Best rate", quotes[0]], ["fast", "Fastest", fastest]] as const).map(([k, label, q]) => (
                 <button key={k} onClick={() => q && setSelected(q.id)}
@@ -171,9 +167,9 @@ function Index() {
             </div>
           )}
           <Detail k="Rate" v={quote && amt ? `1 ${token} = ${Math.round((quote.btcOut / amt) * 1e8)} sats` : scanning ? "Finding best rate…" : "—"} />
-          <Detail k="Fee" v={quote ? `$${quote.feeUsd.toFixed(2)}` : "—"} />
-          <Detail k="Time" v={quote ? `~${quote.etaMin} min` : "—"} />
-          <Detail k="Price" v={quote ? (quote.live ? "Live" : "Estimated") : "—"} />
+          <Detail k="Fee" v={quote && !scanning ? "Included in rate" : "—"} />
+          <Detail k="Time" v={quote && !scanning && quote.etaMin !== null ? `~${quote.etaMin} min` : "—"} />
+          <Detail k="Price" v={quote && !scanning ? (quote.live ? "Live" : "Estimated") : "—"} />
         </div>
 
         <Button disabled={creating || (!!blocker && !!wallet && !order)} onClick={startSwap}

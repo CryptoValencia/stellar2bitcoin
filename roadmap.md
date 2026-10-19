@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Corregir comparación engañosa de valor XLM→BTC y verificar cotización real sin cifras simuladas
+
 - [x] Comprobar cotización XLM→BTC sin conectar cartera
 
 - [x] Añadir logos a las opciones de Connect wallet
