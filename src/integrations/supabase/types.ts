@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      swap_orders: {
+        Row: {
+          created_at: string
+          id: string
+          order_data: Json | null
+          request_id: string
+          session_hash: string
+          shift_id: string | null
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_data?: Json | null
+          request_id: string
+          session_hash: string
+          shift_id?: string | null
+          state?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_data?: Json | null
+          request_id?: string
+          session_hash?: string
+          shift_id?: string | null
+          state?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
