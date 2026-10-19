@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-display: "Space Mono", ui-monospace, monospace;
-  --font-brand: "Michroma", "Space Mono", ui-monospace, monospace;
+  --font-brand: "Space Mono", ui-monospace, monospace;
   --font-mono: "Space Mono", ui-monospace, monospace;
   --font-sans: "Space Mono", ui-monospace, monospace;
   --radius-sm: var(--radius);
