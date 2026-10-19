@@ -1,4 +1,6 @@
 // Aggregator service: live provider quotes with simulation fallback.
+import { getSideShiftQuote } from "@/lib/sideshift.functions";
+import { getFixedFloatQuote } from "@/lib/fixedfloat.functions";
 export type Token = "XLM" | "USDC" | "EURC";
 export type BtcNet = "mainnet" | "lightning";
 export type RouteId = "sideshift" | "fixedfloat" | "changenow" | "cctp";
@@ -51,7 +53,6 @@ function simulate(id: RouteId, from: Token, amount: number): Quote {
 export async function fetchSideShiftQuote(fromToken: Token, amount: number, net: BtcNet = "mainnet"): Promise<Quote> {
   const sim = simulate("sideshift", fromToken, amount);
   try {
-    const { getSideShiftQuote } = await import("@/lib/sideshift.functions");
     const r = await getSideShiftQuote({ data: { from: fromToken, amount, lightning: net === "lightning" } });
     if (r.ok) return { ...sim, btcOut: r.btcOut, live: true };
   } catch { /* fall back */ }
@@ -76,7 +77,6 @@ export async function fetchChangeNowQuote(fromToken: Token, amount: number): Pro
 export async function fetchFixedFloatQuote(fromToken: Token, amount: number, net: BtcNet = "mainnet"): Promise<Quote> {
   const sim = simulate("fixedfloat", fromToken, amount);
   try {
-    const { getFixedFloatQuote } = await import("@/lib/fixedfloat.functions");
     const r = await getFixedFloatQuote({ data: { from: fromToken, amount, lightning: net === "lightning", fixed: true } });
     if (r.ok) return { ...sim, btcOut: r.btcOut, live: true };
   } catch { /* fall back */ }

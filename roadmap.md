@@ -2,6 +2,7 @@
 
 - [ ] Corregir Connect wallet: autorización real, saldo real y errores claros
 - [ ] Revisar e integrar el flujo de SideShift según su documentación oficial
+- [ ] Preparar ChangeNOW y guardar su clave de forma segura
 
 - [x] Volver el título a STELLAR2BITCOIN (2 en naranja, resto blanco)
 - [x] Quitar el brillo azul (teal sutil)
