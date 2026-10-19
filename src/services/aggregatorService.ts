@@ -1,7 +1,7 @@
 // Only real provider outputs are returned. Failures never fabricate a quote.
 import { getSideShiftQuote } from "@/lib/sideshift.functions";
 import { positiveFinite, quoteMatches, type QuoteSnapshot } from "@/lib/quote-safety";
-export type Token = "XLM" | "USDC" | "EURC";
+export type Token = "XLM" | "USDC";
 export type BtcNet = "mainnet" | "lightning";
 export type RouteId = "sideshift" | "fixedfloat" | "changenow" | "cctp";
 
@@ -20,8 +20,8 @@ export interface Quote {
   quoteSignature?: string;
 }
 
-export const USD_PRICE: Record<Token, number> = { XLM: 0.1124, USDC: 1, EURC: 1.083 };
-export const BTC_USD = 67842.5;
+
+
 
 const KEY_STORE = "s2b_api_keys";
 export interface ApiKeys { sideshift?: string; changenow?: string; fixedfloat?: string }

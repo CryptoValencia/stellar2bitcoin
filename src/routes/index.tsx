@@ -68,7 +68,7 @@ function Index() {
   }, []);
 
   const amt = parseFloat(amount) || 0;
-  const balance = wallet ? { XLM: wallet.xlm, USDC: wallet.usdc, EURC: wallet.eurc }[token] : 0;
+  const balance = wallet ? { XLM: wallet.xlm, USDC: wallet.usdc }[token] : 0;
 
   useEffect(() => {
     setQuotes([]); setSelected(null); setOrderError("");
@@ -136,7 +136,7 @@ function Index() {
           </div>
 
           {/* Buy */}
-          <div className="panel panel-receive p-5">
+          <div className="panel p-5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground">To</span>
               <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
