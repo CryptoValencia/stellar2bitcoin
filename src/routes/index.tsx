@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
-import { DevDrawer } from "@/components/s2b/DevDrawer";
 import {
   fetchAllQuotes, isLiveMode, BTC_USD, validateDestination, USD_PRICE,
   type BtcNet, type Quote, type RouteId, type Token,
@@ -149,8 +148,6 @@ function Index() {
           {!wallet ? "Connect wallet" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
         </button>
       </main>
-      <DevDrawer onChange={() => setNonce((n) => n + 1)} />
-
       {executing && quote && wallet && (
         <ExecutionModal quote={quote} token={token} amount={amt} dest={dest} walletName={wallet.name} onClose={() => setExecuting(false)} />
       )}
