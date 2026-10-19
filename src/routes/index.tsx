@@ -176,7 +176,7 @@ function Index() {
         {/* Route matrix */}
         <aside>
           <div className="mb-4 flex items-end justify-between">
-            <h2 className="font-display text-2xl text-xlm">Best routes</h2>
+            <h2 className="font-display text-2xl font-bold">Best routes</h2>
             <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">Refresh</button>
           </div>
           {scanning && (
@@ -194,18 +194,18 @@ function Index() {
               const active = q.id === selected;
               return (
                 <button key={q.id} onClick={() => setSelected(q.id)}
-                  className={`panel block w-full p-4 text-left transition glitch-hover ${active ? "glow-btc" : "hover:glow-xlm"}`}>
+                  className={`panel block w-full p-5 text-left transition glitch-hover ${active ? "glow-btc" : "hover:glow-xlm"}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-display text-xl">{q.provider}</div>
+                      <div className="font-display text-lg font-bold">{q.provider}</div>
                       <div className="font-mono text-[11px] text-muted-foreground">{q.tagline}</div>
                     </div>
-                    <span className={`chamfer-sm px-2 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/20 text-acid" : "bg-xlm/15 text-xlm"}`}>{badge}</span>
+                    <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/15 text-acid" : "bg-muted text-muted-foreground"}`}>{badge}</span>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 font-mono text-[11px]">
                     <div><div className="text-muted-foreground">ETA</div>~{q.etaMin} min{q.etaMin > 1 ? "s" : ""}</div>
                     <div><div className="text-muted-foreground">FEE</div>${q.feeUsd.toFixed(2)} <span className="text-muted-foreground">/ {(q.feeBtc * 1e8).toFixed(0)} sats</span></div>
-                    <div className="text-right"><div className="text-muted-foreground">NET RECEIVED</div><span className="text-btc">{q.btcOut.toFixed(8)}</span></div>
+                    <div className="text-right"><div className="text-muted-foreground">NET RECEIVED</div><span className="font-semibold">{q.btcOut.toFixed(8)}</span></div>
                   </div>
                   {!q.live && <div className="mt-2 font-mono text-[9px] text-muted-foreground">SIM_QUOTE</div>}
                 </button>
