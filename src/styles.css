@@ -48,7 +48,7 @@
   --card-foreground: var(--foreground);
   --popover: oklch(1 0 0);
   --popover-foreground: var(--foreground);
-  --btc: oklch(0.68 0.16 55);
+  --btc: oklch(0.24 0.005 260);
   --neon: oklch(0.6 0.17 45);
   --xlm: oklch(0.3 0.01 260);
   --acid: oklch(0.62 0.17 150);
