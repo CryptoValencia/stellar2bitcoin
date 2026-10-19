@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Auditar cotizaciones: importes reales, caducidad, cambios de entrada y confirmación del mismo precio
+- [x] Auditar cotizaciones: importes reales, caducidad, cambios de entrada y confirmación del mismo precio (19 pruebas; XLM/USDC en pantalla comprobados, orden con fondos pendiente)
 
 - [x] Corregir comparación engañosa de valor XLM→BTC y verificar cotización real sin cifras simuladas
 - [x] Revisar 100 USDC→BTC y opciones de agregación para mejorar el importe recibido
