@@ -1,6 +1,5 @@
 // Only real provider outputs are returned. Failures never fabricate a quote.
 import { getSideShiftQuote } from "@/lib/sideshift.functions";
-import { getFixedFloatQuote } from "@/lib/fixedfloat.functions";
 import { positiveFinite, quoteMatches, type QuoteSnapshot } from "@/lib/quote-safety";
 export type Token = "XLM" | "USDC" | "EURC";
 export type BtcNet = "mainnet" | "lightning";
@@ -38,46 +37,17 @@ function realQuote(id: RouteId, btcOut: number, lightning: boolean): Quote {
   return { id, provider: id, tagline: "", badge: "BEST RETURN", btcOut, lightning, live: true, feeUsd: null, feeBtc: null, etaMin: null };
 }
 
-export async function fetchSideShiftQuote(fromToken: Token, amount: number, net: BtcNet = "mainnet"): Promise<Quote | null> {
-  try {
-    const r = await getSideShiftQuote({ data: { from: fromToken, amount, lightning: net === "lightning" } });
-    if (r.ok && positiveFinite(r.btcOut) && r.quoteSignature && quoteMatches(r.quote, { from: fromToken, amount, lightning: net === "lightning" })) return { ...realQuote("sideshift", r.btcOut, net === "lightning"), snapshot: r.quote, quoteSignature: r.quoteSignature };
-  } catch { /* unavailable */ }
-  return null;
-}
-
-export async function fetchChangeNowQuote(fromToken: Token, amount: number): Promise<Quote | null> {
-  const key = getApiKeys().changenow;
-  if (key) {
-    try {
-      const r = await fetch(`https://api.changenow.io/v2/exchange/estimated-amount?fromCurrency=${fromToken.toLowerCase()}&toCurrency=btc&fromAmount=${amount}&fromNetwork=xlm&toNetwork=btc&flow=standard`, { headers: { "x-changenow-api-key": key } });
-      if (r.ok) {
-        const j = await r.json();
-        if (positiveFinite(j.toAmount)) return realQuote("changenow", Number(j.toAmount), false);
-      }
-    } catch { /* unavailable */ }
-  }
-  return null;
-}
-
-export async function fetchFixedFloatQuote(fromToken: Token, amount: number, net: BtcNet = "mainnet"): Promise<Quote | null> {
-  if (fromToken !== "XLM") return null;
-  try {
-    const r = await getFixedFloatQuote({ data: { from: fromToken, amount, lightning: net === "lightning", fixed: true } });
-    if (r.ok && positiveFinite(r.btcOut)) return realQuote("fixedfloat", r.btcOut, net === "lightning");
-  } catch { /* unavailable */ }
-  return null;
-}
-
-export async function fetchCctpChainflipQuote(_fromToken: Token, _amount: number): Promise<Quote | null> {
-  return null;
-}
-
 export async function fetchAllQuotes(from: Token, amount: number, net: BtcNet): Promise<Quote[]> {
   if (!positiveFinite(amount)) return [];
-  // Other providers are quote-only; don't wait for or rank them as executable.
-  const res = await Promise.all([fetchSideShiftQuote(from, amount, net)]);
-  return res.filter((q): q is Quote => !!q && (net === "mainnet" || q.lightning)).sort((a, b) => b.btcOut - a.btcOut);
+  const lightning = net === "lightning";
+  try {
+    const r = await getSideShiftQuote({ data: { from: from as "XLM" | "USDC", amount, lightning } });
+    if (!r.ok) return [];
+    return r.quotes
+      .filter((q) => positiveFinite(q.btcOut) && q.quoteSignature && quoteMatches(q.quote, { from, amount, lightning }))
+      .map((q) => ({ ...realQuote(q.quote.provider, q.btcOut, lightning), snapshot: q.quote, quoteSignature: q.quoteSignature }))
+      .sort((a, b) => b.btcOut - a.btcOut);
+  } catch { return []; }
 }
 
 export type AddrType = "taproot" | "segwit" | "legacy" | "lightning" | "invalid" | "empty";
