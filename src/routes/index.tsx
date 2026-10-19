@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { Button } from "@/components/ui/button";
+import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
+import { chooseExecutableQuotes, orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
@@ -14,7 +18,7 @@ export const Route = createFileRoute("/")({
       { title: "Stellar2Bitcoin — Bridge XLM, USDC & EURC to Native BTC" },
       { name: "description", content: "Cross-chain aggregator routing Stellar assets to Bitcoin mainnet and Lightning at the best rate." },
       { property: "og:title", content: "Stellar2Bitcoin — S2B Protocol" },
-      { property: "og:description", content: "Swap XLM, USDC and EURC to native BTC or Lightning. Compare SideShift, FixedFloat, ChangeNOW and Chainflip routes." },
+      { property: "og:description", content: "Swap Stellar assets to Bitcoin with a simple wallet connection, clear rates and deposit tracking." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -40,6 +44,19 @@ function Index() {
   const [scanning, setScanning] = useState(false);
   const [selected, setSelected] = useState<RouteId | null>(null);
   const [executing, setExecuting] = useState(false);
+  const [order, setOrder] = useState<SwapOrder | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [orderError, setOrderError] = useState("");
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const createOrder = useServerFn(createSwapOrder);
+  const recoverOrder = useServerFn(getSwapOrder);
+  useEffect(() => {
+    let active = true;
+    recoverOrder().then((result) => {
+      if (active && result.ok && result.order && !orderIsFinal(result.order.status)) setOrder(result.order);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [recoverOrder]);
   const [live, setLive] = useState(false);
   const [nonce, setNonce] = useState(0);
 
@@ -55,8 +72,9 @@ function Index() {
     const t = setTimeout(async () => {
       const q = await fetchAllQuotes(token, amt, net);
       if (cancel) return;
-      setQuotes(q); setScanning(false);
-      setSelected((s) => (q.find((x) => x.id === s) ? s : q[0]?.id ?? null));
+      const executable = chooseExecutableQuotes(q);
+      setQuotes(executable); setScanning(false);
+      setSelected((s) => (executable.find((x) => x.id === s) ? s : executable[0]?.id ?? null));
     }, 350);
     return () => { cancel = true; clearTimeout(t); };
   }, [amt, token, net, nonce]);
@@ -66,7 +84,22 @@ function Index() {
   const fastest = useMemo(() => quotes.reduce<Quote | null>((a, b) => (!a || b.etaMin < a.etaMin ? b : a), null), [quotes]);
 
   const blocker = !wallet ? "CONNECT WALLET FIRST" : amt <= 0 ? "ENTER AMOUNT" : amt > balance ? "INSUFFICIENT BALANCE"
-    : addr === "empty" || addr === "invalid" ? "ENTER VALID DESTINATION" : !quote ? "AWAITING ROUTE" : null;
+    : addr === "empty" || addr === "invalid" ? "ENTER VALID DESTINATION" : !quote ? (scanning ? "FINDING PRICE" : "SWAP UNAVAILABLE") : null;
+
+  const startSwap = async () => {
+    if (!wallet) { document.getElementById("connect-wallet")?.click(); return; }
+    if (blocker || creating) return;
+    if (order && !orderIsFinal(order.status)) { setExecuting(true); return; }
+    setCreating(true); setOrderError("");
+    const id = requestId ?? crypto.randomUUID();
+    setRequestId(id);
+    try {
+      const result = await createOrder({ data: { from: token, amount: amt, lightning: net === "lightning", destination: dest, refundAddress: wallet.address, requestId: id } });
+      if (result.ok) { setOrder(result.order); setExecuting(true); setRequestId(null); }
+      else setOrderError(result.error);
+    } catch { setOrderError("Couldn't confirm your order. No payment was sent; please retry this request."); }
+    finally { setCreating(false); }
+  };
 
   const pill = (on: boolean) => `flex-1 rounded-[7px] py-1.5 text-xs transition ${on ? "bg-panel font-medium shadow-sm" : "text-muted-foreground"}`;
 
@@ -143,13 +176,15 @@ function Index() {
           <Detail k="Price" v={quote ? (quote.live ? "Live" : "Estimated") : "—"} />
         </div>
 
-        <button disabled={!!blocker && !!wallet} onClick={() => (wallet ? setExecuting(true) : document.getElementById("connect-wallet")?.click())}
-          className="btn-cta mt-6 w-full py-4 text-base font-bold">
-          {!wallet ? "Connect wallet" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
-        </button>
+        <Button disabled={creating || (!!blocker && !!wallet && !order)} onClick={startSwap}
+          className="btn-cta mt-6 h-auto w-full py-4 text-base font-bold">
+          {creating ? "Creating swap…" : !wallet ? "Connect wallet" : order && !orderIsFinal(order.status) ? "View current swap" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
+        </Button>
+        {orderError && <p role="alert" className="mt-3 text-xs text-destructive">{orderError}</p>}
+        {order && !orderIsFinal(order.status) && <Button variant="link" className="mt-2 w-full text-xs" onClick={() => setExecuting(true)}>View current swap</Button>}
       </main>
-      {executing && quote && wallet && (
-        <ExecutionModal quote={quote} token={token} amount={amt} dest={dest} walletName={wallet.name} onClose={() => setExecuting(false)} />
+      {executing && order && (
+        <ExecutionModal order={order} onClose={() => setExecuting(false)} />
       )}
     </div>
   );
