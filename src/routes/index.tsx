@@ -165,6 +165,9 @@ function Index() {
                 {quote && !scanning ? quote.btcOut.toFixed(8) : scanning ? "…" : "—"}
               </div>
             </div>
+            <div className="mt-1 text-right text-xs text-muted-foreground">
+              {quote && !scanning && prices ? `≈ $${(quote.btcOut * prices.btcUsd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}
+            </div>
             <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "Lightning invoice (lnbc…)" : "Your BTC address (bc1…)"}
               className={`mt-4 w-full rounded-[10px] bg-muted px-3 py-3 text-xs outline-none transition ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground/40"}`} />
             {addr !== "empty" && <div className={`mt-2 text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{ADDR_LABEL[addr]?.[0]}</div>}
