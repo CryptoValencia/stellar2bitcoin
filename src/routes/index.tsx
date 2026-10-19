@@ -50,8 +50,17 @@ function Index() {
   const [creating, setCreating] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [requestId, setRequestId] = useState<string | null>(null);
+  const [prices, setPrices] = useState<MarketPrices | null>(null);
   const createOrder = useServerFn(createSwapOrder);
   const recoverOrder = useServerFn(getSwapOrder);
+  const loadPrices = useServerFn(getMarketPrices);
+  useEffect(() => {
+    let active = true;
+    const load = () => loadPrices().then((r) => { if (active && r.ok && r.prices) setPrices(r.prices); }).catch(() => {});
+    load();
+    const t = setInterval(load, 60000);
+    return () => { active = false; clearInterval(t); };
+  }, [loadPrices]);
   useEffect(() => {
     let active = true;
     recoverOrder().then((result) => {
