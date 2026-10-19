@@ -77,7 +77,7 @@ function Index() {
         <div className="relative">
           {/* Sell */}
           <div className="panel p-5">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Sell</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">From</div>
             <div className="mt-3 flex items-start justify-between gap-4">
               <div className="shrink-0">
                 <TokenSelect value={token} onChange={setToken} />
@@ -100,7 +100,7 @@ function Index() {
           {/* Buy */}
           <div className="panel panel-receive p-5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Buy</span>
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">To</span>
               <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
                 {(["mainnet", "lightning"] as const).map((n) => (
                   <button key={n} onClick={() => { setNet(n); setDest(""); }}
