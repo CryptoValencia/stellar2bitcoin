@@ -39,11 +39,11 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
   );
 
   return (
-    <header className="relative z-10 border-b border-border bg-background/80 backdrop-blur">
+    <header className="relative z-10 border-b border-border bg-background">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <div className="shrink-0">
           <div className="text-sm font-semibold tracking-tight glitch-hover">
-            <span className="text-xlm text-glow-xlm">STELLAR</span><span className="text-foreground">2</span><span className="text-btc text-glow-btc">BITCOIN</span>
+            stellar2bitcoin
             <span className="ml-2 font-mono text-xs text-muted-foreground"></span>
           </div>
         </div>

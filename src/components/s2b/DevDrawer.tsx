@@ -8,10 +8,10 @@ export function DevDrawer({ onChange }: { onChange: () => void }) {
   const live = !!(keys.sideshift || keys.changenow || keys.fixedfloat);
 
   return (
-    <footer className="relative z-10 mt-10 border-t border-border bg-void/80">
+    <footer className="relative z-10 mt-10 border-t border-border bg-background">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 font-mono text-xs text-muted-foreground">
-        <span>S2B_PROTOCOL © 2026 · Non-custodial routing · Quotes are estimates</span>
-        <button onClick={() => setOpen(!open)} className="chamfer-sm bg-muted px-3 py-1.5 text-xlm hover:glow-xlm">[DEV_API_CONFIG] {live ? "· LIVE" : "· SIMULATION"}</button>
+        <span>© 2026 stellar2bitcoin</span>
+        <button onClick={() => setOpen(!open)} className="chamfer-sm bg-muted px-3 py-1.5 text-xlm hover:glow-xlm">API settings</button>
       </div>
       {open && (
         <div className="mx-auto max-w-7xl px-4 pb-6">
