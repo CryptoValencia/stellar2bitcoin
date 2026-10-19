@@ -45,8 +45,8 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 p-4 backdrop-blur">
       <div className="panel glow-btc max-h-[92vh] w-full max-w-2xl overflow-y-auto p-6 font-mono">
         <div className="mb-4 flex items-center justify-between">
-          <div className="font-display text-sm tracking-widest text-btc text-glow-btc">EXECUTION_TERMINAL // {quote.provider.toUpperCase()}</div>
-          <button onClick={onClose} className="text-xs text-muted-foreground hover:text-destructive">[X] ABORT</button>
+          <div className="font-display text-2xl text-btc text-glow-btc">Swap via {quote.provider}</div>
+          <button onClick={onClose} className="text-xs text-muted-foreground hover:text-destructive">Cancel</button>
         </div>
         <div className="mb-5 grid grid-cols-3 gap-1">
           {["ROUTE LOCK", "SIGN XDR", "TELEMETRY"].map((s, i) => (
@@ -63,7 +63,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
           <Field label="RATE LOCK" value={`${mm}:${ss}`} cls={secs < 60 ? "text-destructive" : "text-btc"} />
         </div>
 
-        {stage === 1 && <div className="relative h-1 overflow-hidden bg-muted"><div className="absolute h-full w-1/3 bg-btc scan-bar" /><p className="pt-3 text-xs text-muted-foreground">GENERATING XDR ENVELOPE…</p></div>}
+        {stage === 1 && <div className="relative h-1 overflow-hidden bg-muted"><div className="absolute h-full w-1/3 bg-btc scan-bar" /><p className="pt-3 text-xs text-muted-foreground">Preparing your transaction…</p></div>}
 
         {stage === 2 && (
           <div>
@@ -75,7 +75,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
               ))}
             </div>
             {tab === "wallet" ? (
-              <button onClick={() => setStage(3)} className="btn-cta w-full py-4 font-display text-sm font-bold tracking-widest">
+              <button onClick={() => setStage(3)} className="btn-cta w-full py-4 font-display text-xl tracking-widest">
                 SIGN & BROADCAST WITH {walletName.toUpperCase()}
               </button>
             ) : (
@@ -107,7 +107,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
             <div className="h-40 overflow-y-auto bg-background p-3 text-[11px] text-acid chamfer-sm">
               {logs.map((l, i) => <div key={i}>{l}</div>)}<span className="caret">_</span>
             </div>
-            {progress >= 4 && <button onClick={onClose} className="btn-cta mt-4 w-full py-3 font-display text-xs font-bold tracking-widest">SWAP COMPLETE // CLOSE</button>}
+            {progress >= 4 && <button onClick={onClose} className="btn-cta mt-4 w-full py-3 font-sans text-sm font-semibold">Done</button>}
           </div>
         )}
       </div>

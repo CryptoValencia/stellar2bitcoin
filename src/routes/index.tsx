@@ -75,17 +75,17 @@ function Index() {
       <main className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[1.15fr_1fr]">
         <section>
           <div className="mb-4">
-            <h1 className="font-display text-3xl font-black tracking-wide md:text-4xl">
-              <span className="text-xlm text-glow-xlm">STELLAR</span> <span className="text-muted-foreground">→</span> <span className="text-btc text-glow-btc">NATIVE BTC</span>
+            <h1 className="font-display text-4xl font-bold md:text-5xl">
+              <span className="text-foreground">Stellar</span> <span className="text-muted-foreground">→</span> <span className="text-foreground">native Bitcoin</span><span className="caret text-acid">_</span>
             </h1>
             <p className="font-mono text-xs text-muted-foreground">
-              Mode: <span className={live ? "text-acid" : "text-btc"}>{live ? "LIVE_PRODUCTION" : "SIMULATION"}</span> · 4 liquidity nodes indexed
+              Mode: <span className={live ? "text-acid" : "text-btc"}>{live ? "Live" : "Simulation"}</span> · 4 liquidity nodes indexed
             </p>
           </div>
 
           <div className="panel p-5">
             {/* Source */}
-            <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest text-xlm"><span>// SOURCE · STELLAR NETWORK</span>
+            <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest text-xlm"><span>You send · Stellar</span>
               <span className="text-muted-foreground">BAL: {wallet ? balance.toLocaleString() : "--"} {token}</span></div>
             <div className="chamfer-sm glow-xlm bg-background/60 p-4">
               <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ function Index() {
                   <option value="XLM">XLM (Native)</option><option value="USDC">USDC (Circle)</option><option value="EURC">EURC</option>
                 </select>
                 <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0.00"
-                  className="w-full min-w-0 bg-transparent text-right font-mono text-3xl text-foreground outline-none" />
+                  className="w-full min-w-0 bg-transparent text-right font-display text-4xl font-bold text-foreground outline-none" />
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex gap-1.5">
@@ -110,7 +110,7 @@ function Index() {
             <div className="my-3 text-center font-mono text-xl text-btc">⇣</div>
 
             {/* Destination */}
-            <div className="mb-1 font-mono text-[11px] tracking-widest text-btc">// DESTINATION · BITCOIN NETWORK</div>
+            <div className="mb-1 font-mono text-[11px] tracking-widest text-btc">You receive · Bitcoin</div>
             <div className="chamfer-sm glow-btc bg-background/60 p-4">
               <div className="mb-3 grid grid-cols-2 gap-1.5">
                 {(["mainnet", "lightning"] as const).map((n) => (
@@ -122,7 +122,7 @@ function Index() {
               </div>
               <div className="flex items-baseline justify-between">
                 <span className="font-mono text-xs text-muted-foreground">{quote ? `via ${quote.provider}` : "no route"}</span>
-                <span className="font-mono text-3xl text-btc text-glow-btc">{scanning ? "…" : (quote?.btcOut ?? 0).toFixed(8)} <span className="text-base">BTC</span></span>
+                <span className="font-display text-4xl font-bold text-foreground">{scanning ? "…" : (quote?.btcOut ?? 0).toFixed(8)} <span className="text-base">BTC</span></span>
               </div>
             </div>
 
@@ -147,8 +147,8 @@ function Index() {
             </div>
 
             <button disabled={!!blocker} onClick={() => setExecuting(true)}
-              className="btn-cta mt-6 w-full py-5 font-display text-sm font-black tracking-[0.2em]">
-              {blocker ?? "INITIALIZE CROSS-CHAIN SWAP // SIGN XDR"}
+              className="btn-cta mt-6 w-full py-5 font-sans text-base font-semibold ">
+              {blocker ?? "Review & sign swap"}
             </button>
           </div>
         </section>
@@ -156,17 +156,17 @@ function Index() {
         {/* Route matrix */}
         <aside>
           <div className="mb-4 flex items-end justify-between">
-            <h2 className="font-display text-sm tracking-widest text-xlm">ROUTE_AGGREGATOR_MATRIX</h2>
-            <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">[↻ REFRESH]</button>
+            <h2 className="font-display text-2xl text-xlm">Best routes</h2>
+            <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">Refresh</button>
           </div>
           {scanning && (
             <div className="panel mb-3 p-4 font-mono text-xs text-xlm">
-              SCANNING LIQUIDITY NODES<span className="caret">...</span>
+              Comparing providers<span className="caret">...</span>
               <div className="relative mt-2 h-0.5 overflow-hidden bg-muted"><div className="absolute h-full w-1/3 bg-xlm scan-bar" /></div>
             </div>
           )}
           {!scanning && quotes.length === 0 && (
-            <div className="panel p-8 text-center font-mono text-xs text-muted-foreground">&gt; Enter an amount to query SideShift, FixedFloat, ChangeNOW & CCTP+Chainflip<span className="caret">_</span></div>
+            <div className="panel p-8 text-center font-mono text-xs text-muted-foreground">Enter an amount to compare SideShift, FixedFloat, ChangeNOW & CCTP+Chainflip<span className="caret">_</span></div>
           )}
           <div className={`space-y-3 transition ${scanning ? "opacity-40" : ""}`}>
             {quotes.map((q, i) => {
@@ -177,7 +177,7 @@ function Index() {
                   className={`panel block w-full p-4 text-left transition glitch-hover ${active ? "glow-btc" : "hover:glow-xlm"}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-display text-sm font-bold">{q.provider}</div>
+                      <div className="font-display text-xl">{q.provider}</div>
                       <div className="font-mono text-[11px] text-muted-foreground">{q.tagline}</div>
                     </div>
                     <span className={`chamfer-sm px-2 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/20 text-acid" : "bg-xlm/15 text-xlm"}`}>{badge}</span>
