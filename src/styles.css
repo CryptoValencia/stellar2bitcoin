@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-display: "Space Mono", ui-monospace, monospace;
-  --font-brand: "Anton", "Arial Narrow", sans-serif;
+  --font-brand: "Michroma", "Space Mono", ui-monospace, monospace;
   --font-mono: "Space Mono", ui-monospace, monospace;
   --font-sans: "Space Mono", ui-monospace, monospace;
   --radius-sm: var(--radius);
@@ -178,15 +178,22 @@ body::before {
   box-shadow: 0 10px 40px -14px color-mix(in oklab, var(--acid) 22%, transparent);
 }
 
-/* A compact two-line wordmark; the orange 2 bridges both networks. */
+/* Single-line Michroma wordmark; the orange 2 is italic and bold, same size. */
 .brand-wordmark {
   display: inline-flex;
-  align-items: center;
-  gap: 9px;
+  align-items: baseline;
+  gap: 7px;
   font-family: var(--font-brand);
+  font-size: 24px;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
   line-height: 1;
+  white-space: nowrap;
 }
-.brand-words { display: grid; gap: 3px; font-size: 25px; }
-.brand-bridge { font-size: 60px; line-height: 0.9; }
+.brand-bridge {
+  color: var(--neon);
+  display: inline-block;
+  transform: skewX(-10deg);
+  -webkit-text-stroke: 1.2px var(--neon);
+}
+.brand-words { display: inline; }
