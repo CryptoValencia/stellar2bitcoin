@@ -192,7 +192,7 @@ function Index() {
           )}
           <div className={`space-y-3 transition ${scanning ? "opacity-40" : ""}`}>
             {quotes.map((q, i) => {
-              const badge = i === 0 ? "BEST RETURN" : q.id === fastest?.id ? "FASTEST" : q.badge;
+              const badge = i === 0 ? "BEST RETURN" : q.id === fastest?.id ? "FASTEST" : q.badge === "BEST RETURN" ? "LOW SLIPPAGE" : q.badge;
               const active = q.id === selected;
               return (
                 <button key={q.id} onClick={() => setSelected(q.id)}
