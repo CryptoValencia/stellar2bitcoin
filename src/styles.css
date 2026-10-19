@@ -52,7 +52,8 @@
   --popover: oklch(0.19 0.004 260);
   --popover-foreground: var(--foreground);
   --btc: oklch(0.95 0.003 250);
-  --neon: oklch(0.6 0.17 45);
+  --brand-xlm: oklch(0.88 0.15 200);
+  --brand-btc: oklch(0.74 0.17 60);
   --xlm: oklch(0.85 0.005 260);
   --acid: oklch(0.78 0.19 150);
   --primary: oklch(0.95 0.003 250);
