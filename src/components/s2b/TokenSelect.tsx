@@ -9,10 +9,9 @@ export function TokenLogo({ symbol, size = 20 }: { symbol: Token | "BTC"; size?:
   return <img src={ICON(symbol.toLowerCase())} alt={symbol} width={size} height={size} className="rounded-full" />;
 }
 
-const OPTIONS: { v: Token; label: string }[] = [
+export const OPTIONS: { v: Token; label: string }[] = [
   { v: "XLM", label: "Stellar Lumens" },
   { v: "USDC", label: "USD Coin" },
-  { v: "EURC", label: "Euro Coin" },
 ];
 
 export function TokenSelect({ value, onChange }: { value: Token; onChange: (t: Token) => void }) {

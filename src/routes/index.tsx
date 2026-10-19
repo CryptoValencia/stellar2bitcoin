@@ -15,7 +15,7 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Stellar2Bitcoin — Bridge XLM, USDC & EURC to Native BTC" },
+      { title: "Stellar2Bitcoin — Swap XLM & USDC to BTC" },
       { name: "description", content: "Cross-chain aggregator routing Stellar assets to Bitcoin mainnet and Lightning at the best rate." },
       { property: "og:title", content: "Stellar2Bitcoin — S2B Protocol" },
       { property: "og:description", content: "Swap Stellar assets to Bitcoin with a simple wallet connection, clear rates and deposit tracking." },
