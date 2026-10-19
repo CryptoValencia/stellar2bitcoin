@@ -21,7 +21,7 @@
 - [x] Quitar el pie de página (DevDrawer)
 - [x] Guardar la clave de SideShift cifrada y usarla para cotizar en real (probado: 1000 XLM → 0.00210467 BTC real)
 - [x] Cards: Sell/Buy → From/To
-- [ ] Fuente: aún sin elegir (Space Mono actual; opciones mostradas con el wordmark)
+- [x] Reinventar solo el título tras rechazar las diez alternativas; conservar Space Mono en el swap
 - [x] Integrar órdenes de FixedFloat y ChangeNOW (precios reales de los 3 comprobados)
 - [x] Tarjeta BTC igual que la de XLM (sin brillo)
-- [ ] Proponer nuevas fuentes
+- [x] Aplicar título compacto en dos líneas con un 2 naranja como puente

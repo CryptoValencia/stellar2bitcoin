@@ -36,13 +36,11 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
 
   return (
     <header className="relative z-10 border-b border-border bg-background">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-        <div className="shrink-0">
-          <span className="flex items-center text-base font-bold uppercase tracking-[0.12em]">
-            <span className="text-foreground">Stellar</span>
-            <span className="text-neon">2</span>
-            <span className="text-foreground">Bitcoin</span>
-            <span className="cursor-blink ml-1 inline-block h-[1.1em] w-[0.55em] bg-acid" />
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
+        <div className="shrink-0" aria-label="STELLAR2BITCOIN">
+          <span className="brand-wordmark" aria-hidden="true">
+            <span className="brand-words text-foreground"><span>STELLAR</span><span>BITCOIN</span></span>
+            <span className="brand-bridge text-neon">2</span>
           </span>
         </div>
         
