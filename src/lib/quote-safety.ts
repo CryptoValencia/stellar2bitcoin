@@ -8,6 +8,10 @@ export function quoteMatches(quote: QuoteSnapshot, input: QuoteContext, now = Da
   return quote.from === input.from && quote.amount === input.amount && quote.lightning === input.lightning
     && positiveFinite(quote.settleAmount) && Date.parse(quote.expiresAt) > now;
 }
-export function minimumReceivedBtc(btcOut: number, snapshot?: Pick<QuoteSnapshot, "settleAmount">): string {
-  return snapshot && positiveFinite(snapshot.settleAmount) ? snapshot.settleAmount : btcOut.toFixed(8);
+export function lockCountdown(expiresAt: string | undefined, now: number): string {
+  if (!expiresAt) return "—";
+  const ms = Date.parse(expiresAt) - now;
+  if (!Number.isFinite(ms) || ms <= 0) return "Expired";
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left`;
 }
