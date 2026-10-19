@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import logoDark from "@/assets/logo-s2b-dark.png";
+import logoLight from "@/assets/logo-s2b-light.png";
 import { BTC_USD, USD_PRICE } from "@/services/aggregatorService";
 
 export interface Wallet { name: string; address: string; xlm: number; usdc: number; eurc: number }
@@ -46,8 +48,8 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <div className="shrink-0">
           <div className="text-sm font-semibold tracking-tight glitch-hover">
-            stellar2bitcoin
-            <span className="ml-2 font-mono text-xs text-muted-foreground"></span>
+            <img src={logoDark} alt="S2B" className="logo-on-dark h-6 w-auto" />
+            <img src={logoLight} alt="S2B" className="logo-on-light h-6 w-auto" />
           </div>
         </div>
         

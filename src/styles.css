@@ -155,3 +155,6 @@ body { background-image: radial-gradient(80% 60% at 0% 100%, color-mix(in oklab,
   --ink-2: oklch(0.28 0.005 260);
 }
 .light body { background-image: none; }
+.logo-on-light { display: none; }
+.light .logo-on-light { display: block; }
+.light .logo-on-dark { display: none; }
