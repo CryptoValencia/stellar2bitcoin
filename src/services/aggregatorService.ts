@@ -48,25 +48,14 @@ function simulate(id: RouteId, from: Token, amount: number): Quote {
   };
 }
 
-export async function fetchSideShiftQuote(fromToken: Token, amount: number): Promise<Quote> {
-  const key = getApiKeys().sideshift;
-  if (key) {
-    try {
-      const coin = fromToken.toLowerCase();
-      const r = await fetch("https://sideshift.ai/api/v2/quotes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-sideshift-secret": key },
-        body: JSON.stringify({ depositCoin: coin, depositNetwork: "stellar", settleCoin: "btc", settleNetwork: "bitcoin", depositAmount: String(amount) }),
-      });
-      if (r.ok) {
-        const j = await r.json();
-        const sim = simulate("sideshift", fromToken, amount);
-        return { ...sim, btcOut: Number(j.settleAmount), live: true };
-      }
-    } catch { /* fall back */ }
-  }
-  await delay(500 + Math.random() * 500);
-  return simulate("sideshift", fromToken, amount);
+export async function fetchSideShiftQuote(fromToken: Token, amount: number, net: BtcNet = "mainnet"): Promise<Quote> {
+  const sim = simulate("sideshift", fromToken, amount);
+  try {
+    const { getSideShiftQuote } = await import("@/lib/sideshift.functions");
+    const r = await getSideShiftQuote({ data: { from: fromToken, amount, lightning: net === "lightning" } });
+    if (r.ok) return { ...sim, btcOut: r.btcOut, live: true };
+  } catch { /* fall back */ }
+  return sim;
 }
 
 export async function fetchChangeNowQuote(fromToken: Token, amount: number): Promise<Quote> {
@@ -102,7 +91,7 @@ export async function fetchCctpChainflipQuote(fromToken: Token, amount: number):
 
 export async function fetchAllQuotes(from: Token, amount: number, net: BtcNet): Promise<Quote[]> {
   const res = await Promise.all([
-    fetchSideShiftQuote(from, amount), fetchFixedFloatQuote(from, amount, net),
+    fetchSideShiftQuote(from, amount, net), fetchFixedFloatQuote(from, amount, net),
     fetchChangeNowQuote(from, amount), fetchCctpChainflipQuote(from, amount),
   ]);
   return res.filter((q): q is Quote => !!q && (net === "mainnet" || q.lightning)).sort((a, b) => b.btcOut - a.btcOut);
