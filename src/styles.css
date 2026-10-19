@@ -6,6 +6,7 @@
 
 @theme inline {
   --font-display: "Space Mono", ui-monospace, monospace;
+  --font-brand: "Anton", "Arial Narrow", sans-serif;
   --font-mono: "Space Mono", ui-monospace, monospace;
   --font-sans: "Space Mono", ui-monospace, monospace;
   --radius-sm: var(--radius);
@@ -176,3 +177,16 @@ body::before {
   border-color: color-mix(in oklab, var(--acid) 28%, var(--border));
   box-shadow: 0 10px 40px -14px color-mix(in oklab, var(--acid) 22%, transparent);
 }
+
+/* A compact two-line wordmark; the orange 2 bridges both networks. */
+.brand-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-brand);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.brand-words { display: grid; gap: 3px; font-size: 25px; }
+.brand-bridge { font-size: 60px; line-height: 0.9; }
