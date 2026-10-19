@@ -189,13 +189,7 @@ function Index() {
           <Detail k="Rate" v={quote && !scanning && amt && prices
             ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.btcOut / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
             : scanning ? "Updating…" : "—"} />
-          <Detail k="Total cost" v={(() => {
-            if (!quote || scanning || !amt || !prices) return "—";
-            const inUsd = amt * (token === "XLM" ? prices.xlmUsd : 1);
-            const outUsd = quote.btcOut * prices.btcUsd;
-            const cost = Math.max(0, inUsd - outUsd);
-            return `≈ $${cost.toFixed(2)} (${((cost / inUsd) * 100).toFixed(2)}%)`;
-          })()} />
+          <Detail k="Fees" v="Included in price" />
           <Detail k="Time" v={net === "lightning" ? "≈ 1–5 min" : "≈ 10–30 min · 1 confirmation"} />
         </div>
 
