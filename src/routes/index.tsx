@@ -201,7 +201,7 @@ function Index() {
               <Detail k="Price locked until" v={quote?.snapshot ? new Date(quote.snapshot.expiresAt).toLocaleTimeString() : "—"} />
             </div>
           )}
-          <Detail k="Time" v={net === "lightning" ? "≈ 1–5 min" : "≈ 10–30 min · 1 confirmation"} />
+          <Detail k="Arrives" v={net === "lightning" ? "≈ 1–3 min to your wallet" : "≈ 5–10 min to your wallet"} />
         </div>
 
         <Button disabled={creating || (!!blocker && !!wallet && !order)} onClick={startSwap}
