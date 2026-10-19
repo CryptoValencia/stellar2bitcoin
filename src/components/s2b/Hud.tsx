@@ -47,8 +47,8 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
         <div className="shrink-0">
           <span className="flex items-center text-base font-bold uppercase tracking-[0.12em]">
             <span className="text-foreground">Stellar</span>
-            <span className="text-muted-foreground">2</span>
-            <span className="text-acid">Bitcoin</span>
+            <span className="text-neon">2</span>
+            <span className="text-foreground">Bitcoin</span>
             <span className="cursor-blink ml-1 inline-block h-[1.1em] w-[0.55em] bg-acid" />
           </span>
         </div>
