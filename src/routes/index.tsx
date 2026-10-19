@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { DevDrawer } from "@/components/s2b/DevDrawer";
-import { MarketStrip } from "@/components/s2b/MarketStrip";
 import {
   fetchAllQuotes, isLiveMode, validateDestination, USD_PRICE,
   type BtcNet, type Quote, type RouteId, type Token,
@@ -74,7 +73,6 @@ function Index() {
     <div className="relative flex min-h-screen flex-col">
       <Hud wallet={wallet} onConnect={setWallet} />
       <main className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[1.15fr_1fr]">
-        <div className="lg:col-span-2"><MarketStrip /></div>
         <section>
           <div className="mb-4">
             <h1 className="font-display text-4xl font-bold md:text-5xl">
