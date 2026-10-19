@@ -48,8 +48,8 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <div className="shrink-0">
           <div className="text-sm font-semibold tracking-tight glitch-hover">
-            <img src={logoDark} alt="S2B" className="logo-on-dark h-6 w-auto" />
-            <img src={logoLight} alt="S2B" className="logo-on-light h-6 w-auto" />
+            <img src={logoDark} alt="S2B" className="logo-on-dark h-7 w-auto" />
+            <img src={logoLight} alt="S2B" className="logo-on-light h-7 w-auto" />
           </div>
         </div>
         
