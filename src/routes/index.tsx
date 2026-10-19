@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { DevDrawer } from "@/components/s2b/DevDrawer";
+import { MarketStrip } from "@/components/s2b/MarketStrip";
 import {
   fetchAllQuotes, isLiveMode, validateDestination, USD_PRICE,
   type BtcNet, type Quote, type RouteId, type Token,
@@ -73,6 +74,7 @@ function Index() {
     <div className="relative flex min-h-screen flex-col">
       <Hud wallet={wallet} onConnect={setWallet} />
       <main className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[1.15fr_1fr]">
+        <div className="lg:col-span-2"><MarketStrip /></div>
         <section>
           <div className="mb-4">
             <h1 className="font-display text-4xl font-bold md:text-5xl">
@@ -83,72 +85,92 @@ function Index() {
             </p>
           </div>
 
-          <div className="panel p-5">
+          <div className="space-y-2">
             {/* Source */}
-            <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest text-xlm"><span>You send · Stellar</span>
-              <span className="text-muted-foreground">BAL: {wallet ? balance.toLocaleString() : "--"} {token}</span></div>
-            <div className="chamfer-sm glow-xlm bg-background/60 p-4">
-              <div className="flex items-center gap-3">
+            <div className="panel p-6">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">You send <span className="font-mono text-[11px]">· stellar</span></span>
                 <select value={token} onChange={(e) => setToken(e.target.value as Token)}
-                  className="chamfer-sm bg-muted px-3 py-2 font-mono text-sm text-xlm outline-none">
-                  <option value="XLM">XLM (Native)</option><option value="USDC">USDC (Circle)</option><option value="EURC">EURC</option>
+                  className="rounded-full bg-muted px-3 py-1.5 font-mono text-xs font-medium outline-none">
+                  <option value="XLM">XLM</option><option value="USDC">USDC</option><option value="EURC">EURC</option>
                 </select>
-                <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0.00"
-                  className="w-full min-w-0 bg-transparent text-right font-display text-4xl font-bold text-foreground outline-none" />
               </div>
-              <div className="mt-3 flex items-center justify-between">
-                <div className="flex gap-1.5">
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0.00"
+                  className="w-full min-w-0 bg-transparent font-display text-5xl font-bold tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40" />
+                <span className="shrink-0 pb-2 font-mono text-[11px] text-muted-foreground">Available: {wallet ? balance.toLocaleString() : "--"}</span>
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex gap-1">
                   {[25, 50, 75, 100].map((p) => (
                     <button key={p} disabled={!wallet} onClick={() => setAmount(String(+(balance * p / 100).toFixed(token === "XLM" ? 4 : 2)))}
-                      className="chamfer-sm bg-muted px-2.5 py-1 font-mono text-[11px] text-xlm hover:glow-xlm disabled:opacity-40">{p === 100 ? "MAX" : `${p}%`}</button>
+                      className="rounded-full bg-muted px-3 py-1 font-mono text-[11px] hover:bg-primary hover:text-primary-foreground disabled:opacity-40">{p === 100 ? "MAX" : `${p}%`}</button>
                   ))}
                 </div>
                 <span className="font-mono text-xs text-muted-foreground">≈ ${(amt * USD_PRICE[token]).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               </div>
             </div>
 
-            <div className="my-3 text-center font-mono text-xl text-btc">⇣</div>
-
             {/* Destination */}
-            <div className="mb-1 font-mono text-[11px] tracking-widest text-btc">You receive · Bitcoin</div>
-            <div className="chamfer-sm glow-btc bg-background/60 p-4">
-              <div className="mb-3 grid grid-cols-2 gap-1.5">
+            <div className="panel p-6">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">You receive <span className="font-mono text-[11px]">· {quote ? quote.provider.toLowerCase() : "bitcoin"}</span></span>
+                <span className="rounded-full bg-muted px-3 py-1.5 font-mono text-xs font-medium">₿ BTC</span>
+              </div>
+              <div className="mt-3 font-display text-5xl font-bold tracking-tight">
+                {scanning ? <span className="text-muted-foreground/40">0.00000000</span> : (quote?.btcOut ?? 0).toFixed(8)}
+              </div>
+              <div className="mt-4 flex rounded-full bg-muted p-1">
                 {(["mainnet", "lightning"] as const).map((n) => (
                   <button key={n} onClick={() => { setNet(n); setDest(""); }}
-                    className={`chamfer-sm py-2 font-mono text-[11px] tracking-wider ${net === n ? "bg-btc text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                    {n === "mainnet" ? "BTC MAINNET (On-Chain)" : "LIGHTNING (BOLT11)"}
+                    className={`flex-1 rounded-full py-2 text-sm transition ${net === n ? "bg-panel font-semibold shadow-sm" : "text-muted-foreground"}`}>
+                    {n === "mainnet" ? "On-chain" : "⚡ Lightning"}
                   </button>
                 ))}
               </div>
-              <div className="flex items-baseline justify-between">
-                <span className="font-mono text-xs text-muted-foreground">{quote ? `via ${quote.provider}` : "no route"}</span>
-                <span className="font-display text-4xl font-bold text-foreground">{scanning ? "…" : (quote?.btcOut ?? 0).toFixed(8)} <span className="text-base">BTC</span></span>
-              </div>
             </div>
 
-            {/* Address */}
-            <div className="mt-5">
-              <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest">
-                <span className="text-muted-foreground">{net === "lightning" ? "LIGHTNING INVOICE" : "BTC RECEIVING ADDRESS"}</span>
-                {addr !== "empty" && <span className={ADDR_LABEL[addr]?.[1]}>[{ADDR_LABEL[addr]?.[0]}]</span>}
+            {/* Details */}
+            <div className="panel p-6">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{net === "lightning" ? "Lightning invoice" : "Bitcoin address"}</span>
+                {addr !== "empty" && <span className={`font-mono text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{addr === "invalid" ? "✕" : "✓"} {ADDR_LABEL[addr]?.[0]}</span>}
               </div>
               <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "lnbc…" : "bc1p… / bc1q…"}
-                className={`chamfer-sm w-full bg-background px-4 py-3 font-mono text-sm outline-none ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:glow-btc"}`} />
+                className={`w-full rounded-2xl bg-muted px-4 py-3 font-mono text-sm outline-none ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground"}`} />
+
+              <div className="mt-4 flex rounded-full bg-muted p-1">
+                {(["fixed", "float"] as const).map((m) => (
+                  <button key={m} onClick={() => setRateMode(m)}
+                    className={`flex-1 rounded-full py-2 text-sm transition ${rateMode === m ? "bg-panel font-semibold shadow-sm" : "text-muted-foreground"}`}>
+                    {m === "fixed" ? "Fixed · 15m" : "Floating"}
+                  </button>
+                ))}
+              </div>
+
+              <dl className="mt-4 space-y-2 text-sm">
+                {[
+                  ["Rate", quote && amt ? `1 ${token} = ${Math.round((quote.btcOut / amt) * 1e8)} sats` : "—"],
+                  ["Network fee", quote ? `$${quote.feeUsd.toFixed(2)}` : "—"],
+                  ["Est. arrival", quote ? `~${quote.etaMin} min` : "—"],
+                  ["Mode", live ? "Live" : "Simulation"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between"><dt className="text-muted-foreground">{k}</dt><dd className="font-mono">{v}</dd></div>
+                ))}
+                <div className="flex items-center justify-between">
+                  <dt className="text-muted-foreground">Route score</dt>
+                  <dd className="flex items-center gap-2 font-mono">
+                    <span className="flex gap-px">{Array.from({ length: 20 }, (_, i) => <span key={i} className={`h-3 w-0.5 ${quote && i < 16 ? "bg-acid" : "bg-border"}`} />)}</span>
+                    {quote ? "81%" : "—"}
+                  </dd>
+                </div>
+              </dl>
             </div>
 
-            {/* Rate mode */}
-            <div className="mt-4 grid grid-cols-2 gap-1.5">
-              {(["fixed", "float"] as const).map((m) => (
-                <button key={m} onClick={() => setRateMode(m)}
-                  className={`chamfer-sm py-2 font-mono text-[11px] ${rateMode === m ? "glow-acid bg-acid/10 text-acid" : "bg-muted text-muted-foreground"}`}>
-                  {m === "fixed" ? "FIXED RATE (15m Lock)" : "FLOATING RATE (Best Market)"}
-                </button>
-              ))}
-            </div>
-
+            <p className="pt-2 text-center text-xs text-muted-foreground">Non-custodial · Memo is embedded automatically</p>
             <button disabled={!!blocker} onClick={() => setExecuting(true)}
-              className="btn-cta mt-6 w-full py-5 font-sans text-base font-semibold ">
-              {blocker ?? "Review & sign swap"}
+              className="btn-cta w-full py-5 text-base font-semibold">
+              {blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap to Bitcoin"}
             </button>
           </div>
         </section>
@@ -156,7 +178,7 @@ function Index() {
         {/* Route matrix */}
         <aside>
           <div className="mb-4 flex items-end justify-between">
-            <h2 className="font-display text-2xl text-xlm">Best routes</h2>
+            <h2 className="font-display text-2xl font-bold">Best routes</h2>
             <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">Refresh</button>
           </div>
           {scanning && (
@@ -170,22 +192,22 @@ function Index() {
           )}
           <div className={`space-y-3 transition ${scanning ? "opacity-40" : ""}`}>
             {quotes.map((q, i) => {
-              const badge = i === 0 ? "BEST RETURN" : q.id === fastest?.id ? "FASTEST" : q.badge;
+              const badge = i === 0 ? "BEST RETURN" : q.id === fastest?.id ? "FASTEST" : q.badge === "BEST RETURN" ? "LOW SLIPPAGE" : q.badge;
               const active = q.id === selected;
               return (
                 <button key={q.id} onClick={() => setSelected(q.id)}
-                  className={`panel block w-full p-4 text-left transition glitch-hover ${active ? "glow-btc" : "hover:glow-xlm"}`}>
+                  className={`${active ? "" : "panel"} block w-full p-5 text-left transition glitch-hover ${active ? "panel-ink" : "hover:glow-btc"}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-display text-xl">{q.provider}</div>
-                      <div className="font-mono text-[11px] text-muted-foreground">{q.tagline}</div>
+                      <div className="font-display text-lg font-bold">{q.provider}</div>
+                      <div className="font-mono text-[11px] opacity-60">{q.tagline}</div>
                     </div>
-                    <span className={`chamfer-sm px-2 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/20 text-acid" : "bg-xlm/15 text-xlm"}`}>{badge}</span>
+                    <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/15 text-acid" : badge === "FASTEST" ? "bg-amber/20 text-amber" : badge === "100% DEFI" ? "bg-sky/20 text-sky" : "bg-muted text-muted-foreground"}`}>{badge}</span>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 font-mono text-[11px]">
-                    <div><div className="text-muted-foreground">ETA</div>~{q.etaMin} min{q.etaMin > 1 ? "s" : ""}</div>
-                    <div><div className="text-muted-foreground">FEE</div>${q.feeUsd.toFixed(2)} <span className="text-muted-foreground">/ {(q.feeBtc * 1e8).toFixed(0)} sats</span></div>
-                    <div className="text-right"><div className="text-muted-foreground">NET RECEIVED</div><span className="text-btc">{q.btcOut.toFixed(8)}</span></div>
+                    <div><div className="opacity-60">ETA</div>~{q.etaMin} min{q.etaMin > 1 ? "s" : ""}</div>
+                    <div><div className="opacity-60">FEE</div>${q.feeUsd.toFixed(2)} <span className="opacity-60">/ {(q.feeBtc * 1e8).toFixed(0)} sats</span></div>
+                    <div className="text-right"><div className="opacity-60">NET RECEIVED</div><span className="font-semibold">{q.btcOut.toFixed(8)}</span></div>
                   </div>
                   {!q.live && <div className="mt-2 font-mono text-[9px] text-muted-foreground">SIM_QUOTE</div>}
                 </button>

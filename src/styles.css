@@ -109,3 +109,22 @@
 @utility scan-bar { animation: scan 1.2s ease-in-out infinite; }
 @utility ticker-track { animation: ticker 50s linear infinite; }
 @utility caret { animation: pulse-soft 1.4s ease-in-out infinite; }
+
+:root {
+  --ink: oklch(0.19 0.006 260);
+  --ink-2: oklch(0.25 0.006 260);
+  --ink-foreground: oklch(0.96 0.003 250);
+  --sky: oklch(0.72 0.12 230);
+  --amber: oklch(0.82 0.14 85);
+  --gradient-aurora: radial-gradient(120% 90% at 85% 10%, oklch(0.62 0.17 45 / .75), transparent 55%), radial-gradient(90% 90% at 20% 100%, oklch(0.45 0.12 250 / .8), transparent 60%), oklch(0.17 0.02 265);
+}
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-sky: var(--sky);
+  --color-amber: var(--amber);
+}
+@utility panel-ink { border-radius: 1.75rem; background: var(--ink); color: var(--ink-foreground); box-shadow: var(--shadow-soft); }
+@utility panel-aurora { border-radius: 1.75rem; background: var(--gradient-aurora); color: var(--ink-foreground); box-shadow: var(--shadow-soft); }
+@utility pill { border-radius: 999px; padding: .2rem .6rem; font-family: var(--font-mono); font-size: 11px; }

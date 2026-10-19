@@ -43,7 +43,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 p-4 backdrop-blur">
-      <div className="panel glow-btc max-h-[92vh] w-full max-w-2xl overflow-y-auto p-6 font-mono">
+      <div className="panel max-h-[92vh] w-full max-w-2xl overflow-y-auto p-6 font-mono">
         <div className="mb-4 flex items-center justify-between">
           <div className="font-display text-2xl text-btc text-glow-btc">Swap via {quote.provider}</div>
           <button onClick={onClose} className="text-xs text-muted-foreground hover:text-destructive">Cancel</button>
@@ -104,7 +104,7 @@ export function ExecutionModal({ quote, token, amount, dest, walletName, onClose
                 </div>
               ))}
             </div>
-            <div className="h-40 overflow-y-auto bg-background p-3 text-[11px] text-acid chamfer-sm">
+            <div className="h-40 overflow-y-auto rounded-2xl bg-ink p-4 text-[11px] text-acid">
               {logs.map((l, i) => <div key={i}>{l}</div>)}<span className="caret">_</span>
             </div>
             {progress >= 4 && <button onClick={onClose} className="btn-cta mt-4 w-full py-3 font-sans text-sm font-semibold">Done</button>}
