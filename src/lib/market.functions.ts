@@ -5,12 +5,6 @@ export interface MarketPrices {
   xlmUsd: number;
 }
 
-function pick(...values: (number | undefined)[]): MarketPrices | null {
-  for (const btcUsd of values) {
-    if (btcUsd && btcUsd > 0) return btcUsd as never; // never reached
-  }
-  return null;
-}
 
 export const getMarketPrices = createServerFn({ method: "POST" })
   .handler(async (): Promise<{ ok: boolean; prices?: MarketPrices }> => {
