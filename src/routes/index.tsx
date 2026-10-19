@@ -186,7 +186,9 @@ function Index() {
               ))}
             </div>
           )}
-          <Detail k="Rate" v={quote && !scanning && amt ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats` : scanning ? "Updating…" : "—"} />
+          <Detail k="Rate" v={quote && !scanning && amt && prices
+            ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.btcOut / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+            : scanning ? "Updating…" : "—"} />
           <Detail k="Fee" v={quote && !scanning ? "Included in rate" : "—"} />
           <Detail k="Time" v={quote && !scanning && quote.etaMin !== null ? `~${quote.etaMin} min` : "—"} />
           <Detail k="Price" v={quote && !scanning ? "Live · fixed" : "—"} />
