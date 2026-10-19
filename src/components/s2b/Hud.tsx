@@ -9,6 +9,9 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
   const [open, setOpen] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [rate, setRate] = useState(USD_PRICE.XLM / BTC_USD);
+  const [light, setLight] = useState(false);
+  useEffect(() => { setLight(localStorage.getItem("s2b_theme") === "light"); }, []);
+  useEffect(() => { document.documentElement.classList.toggle("light", light); localStorage.setItem("s2b_theme", light ? "light" : "dark"); }, [light]);
   const [fees, setFees] = useState({ f: 18, m: 11, s: 5 });
 
   useEffect(() => {
@@ -48,12 +51,15 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
           </div>
         </div>
         
+        <button onClick={() => setLight(!light)} aria-label="Toggle theme" className="ml-auto rounded-[8px] bg-muted px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+          {light ? "dark" : "light"}
+        </button>
         {wallet ? (
-          <button onClick={() => onConnect(null)} className="ml-auto chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
+          <button onClick={() => onConnect(null)} className="chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
           </button>
         ) : (
-          <button id="connect-wallet" onClick={() => setOpen(true)} className="ml-auto btn-cta px-4 py-2 text-xs font-sans text-sm font-semibold">
+          <button id="connect-wallet" onClick={() => setOpen(true)} className="btn-cta px-4 py-2 text-xs font-sans text-sm font-semibold">
             Connect wallet
           </button>
         )}

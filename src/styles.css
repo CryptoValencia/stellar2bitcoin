@@ -128,3 +128,30 @@
 @utility panel-ink { border-radius: 1.75rem; background: var(--ink); color: var(--ink-foreground); box-shadow: var(--shadow-soft); }
 @utility panel-aurora { border-radius: 1.75rem; background: var(--gradient-aurora); color: var(--ink-foreground); box-shadow: var(--shadow-soft); }
 @utility pill { border-radius: 999px; padding: .2rem .6rem; font-family: var(--font-mono); font-size: 11px; }
+
+/* Dark ambience (reference: teal glow) */
+:root { --acid: oklch(0.82 0.13 200); --sky: oklch(0.82 0.13 200); }
+body { background-image: radial-gradient(80% 60% at 0% 100%, color-mix(in oklab, var(--acid) 14%, transparent), transparent 70%); background-attachment: fixed; }
+
+/* Light theme */
+.light {
+  --background: oklch(0.965 0.003 250);
+  --foreground: oklch(0.2 0.005 260);
+  --panel: oklch(1 0 0);
+  --card: oklch(1 0 0);
+  --popover: oklch(1 0 0);
+  --btc: oklch(0.2 0.005 260);
+  --xlm: oklch(0.3 0.008 260);
+  --acid: oklch(0.55 0.11 210);
+  --sky: oklch(0.55 0.11 210);
+  --primary: oklch(0.2 0.005 260);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.95 0.003 250);
+  --muted: oklch(0.95 0.003 250);
+  --muted-foreground: oklch(0.52 0.008 260);
+  --border: oklch(0.9 0.004 250);
+  --input: oklch(0.9 0.004 250);
+  --ink: oklch(0.2 0.005 260);
+  --ink-2: oklch(0.28 0.005 260);
+}
+.light body { background-image: none; }
