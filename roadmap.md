@@ -1,8 +1,10 @@
 # Roadmap
 
-- [ ] Corregir Connect wallet: autorización real, saldo real y errores claros
-- [ ] Revisar e integrar el flujo de SideShift según su documentación oficial
-- [ ] Preparar ChangeNOW y guardar su clave de forma segura
+- [x] Corregir Connect wallet: autorización real, saldo real y errores claros (tests y ausencia de extensión verificados)
+- [x] Integrar cotizaciones y código de órdenes SideShift según su documentación oficial
+- [ ] Verificar conexión con una extensión real: requiere autorización desde el navegador del usuario
+- [ ] Verificar creación y depósito de una orden real: requiere sitio publicado con IP del visitante y aprobación de fondos
+- [x] Preparar ChangeNOW y guardar su clave de forma segura (conexión verificada)
 
 - [x] Volver el título a STELLAR2BITCOIN (2 en naranja, resto blanco)
 - [x] Quitar el brillo azul (teal sutil)
