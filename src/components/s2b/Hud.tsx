@@ -45,7 +45,9 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
     <header className="relative z-10 border-b border-border bg-background">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <div className="shrink-0">
-          <span className="text-sm font-semibold tracking-tight">stellar2bitcoin</span>
+          <span className="text-sm font-semibold uppercase tracking-[0.18em]">
+            <span className="text-foreground">STELLAR</span><span className="text-muted-foreground">2</span><span className="text-acid">BITCOIN</span>
+          </span>
         </div>
         
         <button onClick={() => setLight(!light)} aria-label="Toggle theme" className="ml-auto rounded-[8px] bg-muted px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
