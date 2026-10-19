@@ -26,3 +26,4 @@
 - [x] Tarjeta BTC igual que la de XLM (sin brillo)
 - [x] Aplicar título compacto en dos líneas con un 2 naranja como puente
 - [ ] Desplegable de detalles con el mínimo garantizado (minimum received) y el precio bloqueado
+- [ ] Tiempo: expresado como llegada a la wallet, con estimación real (no 10–30 min · 1 confirmación)
