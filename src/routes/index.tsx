@@ -76,16 +76,16 @@ function Index() {
         <section>
           <div className="mb-4">
             <h1 className="font-display text-5xl font-normal md:text-6xl">
-              <span className="text-xlm text-glow-xlm">STELLAR</span> <span className="text-muted-foreground">→</span> <span className="text-btc text-glow-btc">NATIVE BTC</span>
+              <span className="text-xlm text-glow-xlm">Stellar</span> <span className="text-muted-foreground">→</span> <span className="text-btc text-glow-btc">native Bitcoin</span>
             </h1>
             <p className="font-mono text-xs text-muted-foreground">
-              Mode: <span className={live ? "text-acid" : "text-btc"}>{live ? "LIVE_PRODUCTION" : "SIMULATION"}</span> · 4 liquidity nodes indexed
+              Mode: <span className={live ? "text-acid" : "text-btc"}>{live ? "Live" : "Simulation"}</span> · 4 liquidity nodes indexed
             </p>
           </div>
 
           <div className="panel p-5">
             {/* Source */}
-            <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest text-xlm"><span>// SOURCE · STELLAR NETWORK</span>
+            <div className="mb-1 flex justify-between font-mono text-[11px] tracking-widest text-xlm"><span>You send · Stellar</span>
               <span className="text-muted-foreground">BAL: {wallet ? balance.toLocaleString() : "--"} {token}</span></div>
             <div className="chamfer-sm glow-xlm bg-background/60 p-4">
               <div className="flex items-center gap-3">
@@ -110,7 +110,7 @@ function Index() {
             <div className="my-3 text-center font-mono text-xl text-btc">⇣</div>
 
             {/* Destination */}
-            <div className="mb-1 font-mono text-[11px] tracking-widest text-btc">// DESTINATION · BITCOIN NETWORK</div>
+            <div className="mb-1 font-mono text-[11px] tracking-widest text-btc">You receive · Bitcoin</div>
             <div className="chamfer-sm glow-btc bg-background/60 p-4">
               <div className="mb-3 grid grid-cols-2 gap-1.5">
                 {(["mainnet", "lightning"] as const).map((n) => (
@@ -148,7 +148,7 @@ function Index() {
 
             <button disabled={!!blocker} onClick={() => setExecuting(true)}
               className="btn-cta mt-6 w-full py-5 font-sans text-base font-semibold ">
-              {blocker ?? "INITIALIZE CROSS-CHAIN SWAP // SIGN XDR"}
+              {blocker ?? "Review & sign swap"}
             </button>
           </div>
         </section>
@@ -156,17 +156,17 @@ function Index() {
         {/* Route matrix */}
         <aside>
           <div className="mb-4 flex items-end justify-between">
-            <h2 className="font-display text-2xl text-xlm">ROUTE_AGGREGATOR_MATRIX</h2>
-            <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">[↻ REFRESH]</button>
+            <h2 className="font-display text-2xl text-xlm">Best routes</h2>
+            <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">Refresh</button>
           </div>
           {scanning && (
             <div className="panel mb-3 p-4 font-mono text-xs text-xlm">
-              SCANNING LIQUIDITY NODES<span className="caret">...</span>
+              Comparing providers<span className="caret">...</span>
               <div className="relative mt-2 h-0.5 overflow-hidden bg-muted"><div className="absolute h-full w-1/3 bg-xlm scan-bar" /></div>
             </div>
           )}
           {!scanning && quotes.length === 0 && (
-            <div className="panel p-8 text-center font-mono text-xs text-muted-foreground">&gt; Enter an amount to query SideShift, FixedFloat, ChangeNOW & CCTP+Chainflip<span className="caret">_</span></div>
+            <div className="panel p-8 text-center font-mono text-xs text-muted-foreground">Enter an amount to compare SideShift, FixedFloat, ChangeNOW & CCTP+Chainflip<span className="caret">_</span></div>
           )}
           <div className={`space-y-3 transition ${scanning ? "opacity-40" : ""}`}>
             {quotes.map((q, i) => {
