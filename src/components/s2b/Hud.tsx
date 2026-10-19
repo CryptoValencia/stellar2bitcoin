@@ -39,10 +39,10 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
   );
 
   return (
-    <header className="relative z-10 border-b border-border bg-void/80 backdrop-blur">
+    <header className="relative z-10 border-b border-border bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <div className="shrink-0">
-          <div className="font-display text-lg font-black tracking-wider glitch-hover">
+          <div className="font-display text-lg font-normal tracking-wider glitch-hover">
             <span className="text-xlm text-glow-xlm">STELLAR</span><span className="text-foreground">2</span><span className="text-btc text-glow-btc">BITCOIN</span>
             <span className="ml-2 font-mono text-xs text-muted-foreground">// S2B_PROTOCOL v2.6</span>
           </div>
@@ -58,7 +58,7 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
           </button>
         ) : (
-          <button onClick={() => setOpen(true)} className="ml-auto btn-cta px-5 py-2.5 font-display text-xs font-bold tracking-widest">
+          <button onClick={() => setOpen(true)} className="ml-auto btn-cta px-5 py-2.5 font-sans text-sm font-semibold">
             CONNECT STELLAR WALLET
           </button>
         )}
@@ -67,7 +67,7 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur" onClick={() => setOpen(false)}>
           <div className="panel glow-xlm w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-1 font-display text-sm tracking-widest text-xlm">&gt; SELECT_WALLET_ADAPTER</div>
+            <div className="mb-1 font-display text-2xl text-xlm">&gt; SELECT_WALLET_ADAPTER</div>
             <p className="mb-5 font-mono text-xs text-muted-foreground">Handshake with a Stellar signer to unlock XDR signing.</p>
             <div className="grid gap-2">
               {WALLETS.map((w) => (

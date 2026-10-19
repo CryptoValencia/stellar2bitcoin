@@ -75,7 +75,7 @@ function Index() {
       <main className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[1.15fr_1fr]">
         <section>
           <div className="mb-4">
-            <h1 className="font-display text-3xl font-black tracking-wide md:text-4xl">
+            <h1 className="font-display text-5xl font-normal md:text-6xl">
               <span className="text-xlm text-glow-xlm">STELLAR</span> <span className="text-muted-foreground">→</span> <span className="text-btc text-glow-btc">NATIVE BTC</span>
             </h1>
             <p className="font-mono text-xs text-muted-foreground">
@@ -147,7 +147,7 @@ function Index() {
             </div>
 
             <button disabled={!!blocker} onClick={() => setExecuting(true)}
-              className="btn-cta mt-6 w-full py-5 font-display text-sm font-black tracking-[0.2em]">
+              className="btn-cta mt-6 w-full py-5 font-sans text-base font-semibold ">
               {blocker ?? "INITIALIZE CROSS-CHAIN SWAP // SIGN XDR"}
             </button>
           </div>
@@ -156,7 +156,7 @@ function Index() {
         {/* Route matrix */}
         <aside>
           <div className="mb-4 flex items-end justify-between">
-            <h2 className="font-display text-sm tracking-widest text-xlm">ROUTE_AGGREGATOR_MATRIX</h2>
+            <h2 className="font-display text-2xl text-xlm">ROUTE_AGGREGATOR_MATRIX</h2>
             <button onClick={() => setNonce((n) => n + 1)} className="font-mono text-[11px] text-muted-foreground hover:text-xlm">[↻ REFRESH]</button>
           </div>
           {scanning && (
@@ -177,7 +177,7 @@ function Index() {
                   className={`panel block w-full p-4 text-left transition glitch-hover ${active ? "glow-btc" : "hover:glow-xlm"}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-display text-sm font-bold">{q.provider}</div>
+                      <div className="font-display text-xl">{q.provider}</div>
                       <div className="font-mono text-[11px] text-muted-foreground">{q.tagline}</div>
                     </div>
                     <span className={`chamfer-sm px-2 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/20 text-acid" : "bg-xlm/15 text-xlm"}`}>{badge}</span>
