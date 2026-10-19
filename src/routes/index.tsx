@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { DevDrawer } from "@/components/s2b/DevDrawer";
+import { MarketStrip } from "@/components/s2b/MarketStrip";
 import {
   fetchAllQuotes, isLiveMode, validateDestination, USD_PRICE,
   type BtcNet, type Quote, type RouteId, type Token,
@@ -73,6 +74,7 @@ function Index() {
     <div className="relative flex min-h-screen flex-col">
       <Hud wallet={wallet} onConnect={setWallet} />
       <main className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[1.15fr_1fr]">
+        <div className="lg:col-span-2"><MarketStrip /></div>
         <section>
           <div className="mb-4">
             <h1 className="font-display text-4xl font-bold md:text-5xl">
@@ -194,18 +196,18 @@ function Index() {
               const active = q.id === selected;
               return (
                 <button key={q.id} onClick={() => setSelected(q.id)}
-                  className={`panel block w-full p-5 text-left transition glitch-hover ${active ? "glow-btc" : "hover:glow-xlm"}`}>
+                  className={`${active ? "" : "panel"} block w-full p-5 text-left transition glitch-hover ${active ? "panel-ink" : "hover:glow-btc"}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-display text-lg font-bold">{q.provider}</div>
-                      <div className="font-mono text-[11px] text-muted-foreground">{q.tagline}</div>
+                      <div className="font-mono text-[11px] opacity-60">{q.tagline}</div>
                     </div>
-                    <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/15 text-acid" : "bg-muted text-muted-foreground"}`}>{badge}</span>
+                    <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] ${badge === "BEST RETURN" ? "bg-acid/15 text-acid" : badge === "FASTEST" ? "bg-amber/20 text-amber" : badge === "100% DEFI" ? "bg-sky/20 text-sky" : "bg-muted text-muted-foreground"}`}>{badge}</span>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 font-mono text-[11px]">
-                    <div><div className="text-muted-foreground">ETA</div>~{q.etaMin} min{q.etaMin > 1 ? "s" : ""}</div>
-                    <div><div className="text-muted-foreground">FEE</div>${q.feeUsd.toFixed(2)} <span className="text-muted-foreground">/ {(q.feeBtc * 1e8).toFixed(0)} sats</span></div>
-                    <div className="text-right"><div className="text-muted-foreground">NET RECEIVED</div><span className="font-semibold">{q.btcOut.toFixed(8)}</span></div>
+                    <div><div className="opacity-60">ETA</div>~{q.etaMin} min{q.etaMin > 1 ? "s" : ""}</div>
+                    <div><div className="opacity-60">FEE</div>${q.feeUsd.toFixed(2)} <span className="opacity-60">/ {(q.feeBtc * 1e8).toFixed(0)} sats</span></div>
+                    <div className="text-right"><div className="opacity-60">NET RECEIVED</div><span className="font-semibold">{q.btcOut.toFixed(8)}</span></div>
                   </div>
                   {!q.live && <div className="mt-2 font-mono text-[9px] text-muted-foreground">SIM_QUOTE</div>}
                 </button>
