@@ -138,6 +138,7 @@ function Index() {
             <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
               <button disabled={!wallet} onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))}
                 className="rounded-full border border-border px-3 py-1 font-bold text-foreground transition hover:bg-muted disabled:opacity-40">MAX</button>
+              <span>{amt > 0 && prices ? `≈ $${(amt * (token === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}</span>
             </div>
           </div>
 
