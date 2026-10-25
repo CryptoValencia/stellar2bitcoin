@@ -15,7 +15,7 @@ const STATUS: Record<string, string> = {
   review: "Under review", settled: "Swap complete",
   refund: "Refund required", refunding: "Refund in progress", refunded: "Refund complete", expired: "Order expired",
 };
-export function ExecutionModal({ order: initial, wallet, requestId, onClose }: { order: SwapOrder; wallet: Wallet | null; requestId?: string; onClose: () => void }) {
+export function ExecutionModal({ order: initial, wallet, requestId, onClose }: { order: SwapOrder; wallet: Wallet | null; requestId: string | undefined; onClose: () => void }) {
   const [order, setOrder] = useState(initial);
   const [now, setNow] = useState(Date.now());
   const [copied, setCopied] = useState("");

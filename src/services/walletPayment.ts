@@ -48,11 +48,13 @@ export async function paySwapWithWallet(wallet: Wallet, order: SwapOrder, onSubm
     } finally { api.closeConnections(); }
   }
   const signed = sdk.TransactionBuilder.fromXDR(signedXdr, MAINNET);
-  if (!signed.hash().equals(prepared.hash()) || !signed.signatures.length) throw new Error("The signed payment does not match this order. Nothing was sent.");
+  const preparedHash = prepared.hash();
+  const signedHash = signed.hash();
+  if (signedHash.length !== preparedHash.length || !signedHash.every((byte, i) => byte === preparedHash[i]) || !signed.signatures.length) throw new Error("The signed payment does not match this order. Nothing was sent.");
   const signer = sdk.Keypair.fromPublicKey(wallet.address);
-  if (!signed.signatures.some((sig) => signer.verify(signed.hash(), sig.signature()))) throw new Error("The connected wallet's signature is missing. Nothing was sent.");
+  if (!signed.signatures.some((sig) => signer.verify(signedHash, sig.signature))) throw new Error("The connected wallet's signature is missing. Nothing was sent.");
   if (Date.parse(order.expiresAt) <= Date.now()) throw new Error("The deposit window expired while signing. Nothing was sent.");
-  const hash = signed.hash().toString("hex");
+  const hash = Array.from(signedHash, (byte) => byte.toString(16).padStart(2, "0")).join("");
   localStorage.setItem(attemptKey(order), hash);
   onSubmitted(hash);
   try { await server.submitTransaction(signed); }
