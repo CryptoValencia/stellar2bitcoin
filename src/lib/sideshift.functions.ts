@@ -27,7 +27,7 @@ export const getSideShiftQuote = createServerFn({ method: "POST" })
       const settled = await Promise.allSettled(tasks);
       settled.forEach((r) => { if (r.status === "rejected") console.warn("quote unavailable:", r.reason instanceof Error ? r.reason.message : r.reason); });
       const key = signingKey(hash);
-      const quotes = await Promise.all(settled.flatMap((r) => r.status === "fulfilled" ? [r.value] : []).map(async (quote) => ({ btcOut: Number(quote.settleAmount), quote, quoteSignature: await signQuote(quote, key) })));
+      const quotes = await Promise.all(settled.flatMap((r) => r.status === "fulfilled" ? [r.value] : []).map(async (quote) => ({ outAmount: Number(quote.settleAmount), quote, quoteSignature: await signQuote(quote, key) })));
       if (!quotes.length) return { ok: false as const, error: "Price unavailable for this amount." };
       return { ok: true as const, quotes };
     } catch (error) {
@@ -92,7 +92,7 @@ export const getSwapOrder = createServerFn({ method: "GET" }).handler(async () =
     let order: SwapOrder;
     if (row.order.provider === "fixedfloat") {
       const { ffStatus } = await import("./providers.server");
-      order = { ...await ffStatus(row.order.id, row.secret["token"] ?? ""), expiresAt: row.order.expiresAt };
+      order = { ...await ffStatus(row.order.id, row.secret["token"] ?? "", row.order), expiresAt: row.order.expiresAt };
     } else if (row.order.provider === "changenow") {
       const { cnStatus } = await import("./providers.server");
       order = await cnStatus(row.order);
