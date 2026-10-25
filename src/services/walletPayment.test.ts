@@ -9,6 +9,13 @@ const source = Keypair.random();
 const destination = Keypair.random();
 const submit = vi.fn();
 vi.mock("@stellar/freighter-api", () => ({ getNetwork: vi.fn(), signTransaction: vi.fn() }));
+vi.mock("@lobstrco/signer-extension-api", () => ({ getPublicKey: vi.fn(), signTransaction: vi.fn() }));
+vi.mock("@albedo-link/intent", () => ({ default: { tx: vi.fn() } }));
+vi.mock("@creit.tech/xbull-wallet-connect", () => ({ xBullWalletConnect: class {
+  connect() { return Promise.resolve(source.publicKey()); }
+  sign({ xdr }: { xdr: string }) { const tx = TransactionBuilder.fromXDR(xdr, Networks.PUBLIC); tx.sign(source); return Promise.resolve(tx.toXDR()); }
+  closeConnections() {}
+} }));
 vi.mock("./walletService", async (original) => ({ ...await original<typeof import("./walletService")>(), loadBalances: vi.fn().mockResolvedValue({ xlm: 100, usdc: 100, eurc: 0, xlmSpendable: 98.99 }) }));
 vi.mock("@stellar/stellar-sdk", async (original) => {
   const sdk = await original<typeof import("@stellar/stellar-sdk")>();
@@ -70,5 +77,22 @@ describe("Wallet deposit safety", () => {
     await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("already open");
     await first;
     expect(submit).toHaveBeenCalledTimes(1);
+  });
+  it.each(["Lobstr", "Albedo", "xBull"] as const)("uses the official %s signer response", async (name) => {
+    submit.mockResolvedValue({});
+    const sign = async (xdr: string) => { const tx = TransactionBuilder.fromXDR(xdr, Networks.PUBLIC); tx.sign(source); return tx.toXDR(); };
+    const lobstr = await import("@lobstrco/signer-extension-api");
+    vi.mocked(lobstr.getPublicKey).mockResolvedValue(source.publicKey());
+    vi.mocked(lobstr.signTransaction).mockImplementation(sign);
+    const { default: albedo } = await import("@albedo-link/intent");
+    vi.mocked(albedo.tx).mockImplementation(async ({ xdr }: { xdr: string }) => ({ signed_envelope_xdr: await sign(xdr) }));
+    await paySwapWithWallet({ ...wallet, name }, makeOrder(), vi.fn());
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+  it("stops before signing if payment status cannot be saved", async () => {
+    allowSigning();
+    vi.stubGlobal("localStorage", { getItem: () => null, setItem: () => { throw new Error("Blocked"); } });
+    await expect(paySwapWithWallet(wallet, makeOrder(), vi.fn())).rejects.toThrow("Nothing was signed or sent");
+    expect(freighter.signTransaction).not.toHaveBeenCalled();
   });
 });
