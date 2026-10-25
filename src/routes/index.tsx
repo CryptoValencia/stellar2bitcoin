@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
-import { History, Wallet as WalletIcon } from "lucide-react";
+import { Wallet as WalletIcon } from "lucide-react";
 import { RecentSwaps } from "@/components/s2b/RecentSwaps";
 import { shortcutAmount } from "@/lib/swap-extras";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
@@ -160,7 +160,7 @@ function Index() {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <Hud wallet={wallet} onConnect={setWallet} />
+      <Hud wallet={wallet} onConnect={setWallet} onHistory={() => setHistoryOpen(true)} />
       <main className="relative z-10 mx-auto w-full max-w-[460px] flex-1 px-4 py-12">
         <div className="relative">
           {/* Sell */}
@@ -274,7 +274,6 @@ function Index() {
         </Button>
         {orderError && <p role="alert" className="mt-3 text-xs text-destructive">{orderError}</p>}
         {order && !orderIsFinal(order.status) && <Button variant="link" className="mt-2 w-full text-xs" onClick={() => setExecuting(true)}>View current swap</Button>}
-        <div className="mt-4 flex justify-center"><Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:bg-muted! hover:text-foreground!" onClick={() => setHistoryOpen(true)}><History />Recent swaps</Button></div>
       </main>
       {executing && order && (
         <ExecutionModal key={`${order.provider}:${order.id}`} order={order} wallet={wallet} requestId={orderRequestId} onClose={() => setExecuting(false)} />
