@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { Account, Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
+// @vitest-environment node
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
 import * as freighter from "@stellar/freighter-api";
 import { paySwapWithWallet } from "./walletPayment";
 import type { SwapOrder } from "@/lib/sideshift-schema";
@@ -18,7 +19,12 @@ vi.mock("@stellar/stellar-sdk", async (original) => {
 });
 const wallet = { name: "Freighter" as const, address: source.publicKey(), xlm: 100, usdc: 100, eurc: 0 };
 const makeOrder = (): SwapOrder => ({ provider: "sideshift", id: crypto.randomUUID(), status: "waiting", depositAddress: destination.publicKey(), depositMemo: "required-memo", depositAmount: "25", settleAmount: "0.0001", expiresAt: new Date(Date.now() + 600000).toISOString(), settleAddress: "bc1qexample", depositCoin: "xlm", settleCoin: "btc" });
-afterEach(() => { vi.clearAllMocks(); localStorage.clear(); });
+beforeEach(() => {
+  const storage = new Map<string, string>();
+  vi.stubGlobal("localStorage", { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) });
+  vi.stubGlobal("navigator", { locks: { request: (_key: string, _options: unknown, callback: (lock: object) => unknown) => callback({}) } });
+});
+afterEach(() => { vi.clearAllMocks(); vi.unstubAllGlobals(); });
 function allowSigning() {
   vi.mocked(freighter.getNetwork).mockResolvedValue({ network: "PUBLIC", networkPassphrase: Networks.PUBLIC });
   vi.mocked(freighter.signTransaction).mockImplementation(async (xdr) => {
@@ -54,6 +60,14 @@ describe("Wallet deposit safety", () => {
     const order = makeOrder();
     await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("do not send again");
     await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("already submitted");
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+  it("rejects simultaneous approval for the same order", async () => {
+    allowSigning(); submit.mockResolvedValue({});
+    const order = makeOrder();
+    const first = paySwapWithWallet(wallet, order, vi.fn());
+    await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("already open");
+    await first;
     expect(submit).toHaveBeenCalledTimes(1);
   });
 });

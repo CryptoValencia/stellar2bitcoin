@@ -36,10 +36,10 @@ function ffOrder(d: any, fallback: { depositCoin: string; settleCoin: string }):
     depositAddress: d.from?.address, depositMemo: d.from?.tag ?? null, depositAmount: String(d.from?.amount),
     settleAmount: String(d.to?.amount), expiresAt: new Date((exp || Date.now() / 1000 + 1800) * 1000).toISOString(),
     settleAddress: String(d.to?.address ?? ""),
-    depositCoin: String(d.from?.currency ?? fallback.depositCoin).toLowerCase(),
-    settleCoin: String(d.to?.currency ?? fallback.settleCoin).toLowerCase(),
-    depositNetwork: String(d.from?.currency ?? fallback.depositCoin).toUpperCase() === "BTC" ? "bitcoin" : "stellar",
-    settleNetwork: String(d.to?.currency ?? fallback.settleCoin).toUpperCase() === "BTC" ? "bitcoin" : "stellar",
+    depositCoin: String(d.from?.coin ?? fallback.depositCoin).toLowerCase(),
+    settleCoin: String(d.to?.coin ?? fallback.settleCoin).toLowerCase(),
+    depositNetwork: String(d.from?.coin ?? fallback.depositCoin).toUpperCase() === "BTC" ? "bitcoin" : "stellar",
+    settleNetwork: String(d.to?.coin ?? fallback.settleCoin).toUpperCase() === "BTC" ? "bitcoin" : "stellar",
     depositTxHash: transactionHash(d.from?.tx?.id), settleTxHash: transactionHash(d.to?.tx?.id),
   });
 }

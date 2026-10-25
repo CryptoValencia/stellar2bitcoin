@@ -4,14 +4,28 @@ import { ASSET_ISSUERS, type Wallet } from "./walletService";
 
 const MAINNET = "Public Global Stellar Network ; September 2015";
 const attemptKey = (order: SwapOrder) => `s2b_payment:${orderKey(order)}`;
+const inFlight = new Set<string>();
 export function savedPaymentHash(order: SwapOrder) { return localStorage.getItem(attemptKey(order)); }
 
 export async function paySwapWithWallet(wallet: Wallet, order: SwapOrder, onSubmitted: (hash: string) => void) {
+  const key = attemptKey(order);
+  if (inFlight.has(key)) throw new Error("Payment approval is already open. Check your wallet.");
+  if (!navigator.locks) throw new Error("Direct payment isn't supported in this browser. Use the QR or open your wallet instead.");
+  inFlight.add(key);
+  try {
+    return await navigator.locks.request(key, { ifAvailable: true }, async (lock) => {
+      if (!lock) throw new Error("Payment approval is already open in another tab.");
+      return sendPayment(wallet, order, onSubmitted);
+    });
+  } finally { inFlight.delete(key); }
+}
+
+async function sendPayment(wallet: Wallet, order: SwapOrder, onSubmitted: (hash: string) => void) {
   if (order.status !== "waiting" || Date.parse(order.expiresAt) <= Date.now()) throw new Error("The deposit window is closed. Do not send funds.");
   if (savedPaymentHash(order)) throw new Error("A payment was already submitted. Wait for the swap status before sending again.");
   const sdk = await import("@stellar/stellar-sdk");
   const coin = order.depositCoin.toUpperCase();
-  if (!["XLM", "USDC"].includes(coin) || !sdk.StrKey.isValidEd25519PublicKey(order.depositAddress)) throw new Error("This deposit cannot be sent with a Stellar wallet.");
+  if (!["XLM", "USDC"].includes(coin) || (order.depositNetwork && order.depositNetwork !== "stellar") || !sdk.StrKey.isValidEd25519PublicKey(order.depositAddress)) throw new Error("This deposit cannot be sent with a Stellar wallet.");
   const server = new sdk.Horizon.Server("https://horizon.stellar.org");
   const [account, fee] = await Promise.all([server.loadAccount(wallet.address), server.fetchBaseFee()]);
   const asset = coin === "XLM" ? sdk.Asset.native() : new sdk.Asset("USDC", ASSET_ISSUERS.USDC);
