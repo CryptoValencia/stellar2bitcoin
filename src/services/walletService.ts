@@ -1,6 +1,7 @@
+import { spendableXlm, type ReserveAccount } from "./stellarBalance";
 export const WALLET_NAMES = ["Freighter", "Lobstr", "xBull", "Albedo"] as const;
 export type WalletName = (typeof WALLET_NAMES)[number];
-export interface Wallet { name: WalletName; address: string; xlm: number; usdc: number; eurc: number }
+export interface Wallet { name: WalletName; address: string; xlm: number; usdc: number; eurc: number; xlmSpendable?: number }
 export const ASSET_ISSUERS = {
   USDC: "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
   EURC: "GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2",
@@ -16,10 +17,16 @@ export function parseBalances(balances: Balance[]) {
 }
 export async function loadBalances(address: string) {
   const response = await fetch(`https://horizon.stellar.org/accounts/${encodeURIComponent(address)}`, { signal: AbortSignal.timeout(15000) });
-  if (response.status === 404) return { xlm: 0, usdc: 0, eurc: 0 };
+  if (response.status === 404) return { xlm: 0, usdc: 0, eurc: 0, xlmSpendable: 0 };
   if (!response.ok) throw new Error("Couldn't load your balance. Please try again.");
-  const account = await response.json() as { balances: Balance[] };
-  return parseBalances(account.balances);
+  const account = await response.json() as ReserveAccount & { balances: Balance[] };
+  const balances = parseBalances(account.balances);
+  const ledgerResponse = await fetch("https://horizon.stellar.org/ledgers?order=desc&limit=1", { signal: AbortSignal.timeout(15000) });
+  if (!ledgerResponse.ok) throw new Error("Couldn't verify your spendable balance. Please retry.");
+  const ledger = await ledgerResponse.json() as { _embedded?: { records?: { base_reserve_in_stroops?: number }[] } };
+  const reserve = Number(ledger._embedded?.records?.[0]?.base_reserve_in_stroops) / 1e7;
+  if (!Number.isFinite(reserve) || reserve <= 0) throw new Error("Couldn't verify your spendable balance. Please retry.");
+  return { ...balances, xlmSpendable: spendableXlm(balances.xlm, account, reserve, 0.01) };
 }
 export async function authorizeWallet(name: WalletName): Promise<string> {
   let address: string;

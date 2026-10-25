@@ -23,3 +23,4 @@
 - Recent swaps use the existing HttpOnly session capability and session-scoped request IDs; history returns only normalized orders, never provider secrets.
 - Wallet payments use dynamically imported Stellar SDK and official wallet signers, verify the signed transaction matches the prepared Mainnet payment, and preserve an attempted transaction hash to prevent blind resubmission.
 - Explorer links require real validated on-chain transaction hashes; Lightning hashes are never linked as Bitcoin transactions.
+- XLM shortcuts and payment validation retain Mainnet's current ledger reserve, sponsorship adjustments and a network-fee buffer; recheck spendable funds before signing.

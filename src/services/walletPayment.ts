@@ -1,6 +1,6 @@
 import type { SwapOrder } from "@/lib/sideshift-schema";
 import { orderKey } from "@/lib/swap-extras";
-import { ASSET_ISSUERS, type Wallet } from "./walletService";
+import { ASSET_ISSUERS, loadBalances, type Wallet } from "./walletService";
 
 const MAINNET = "Public Global Stellar Network ; September 2015";
 const attemptKey = (order: SwapOrder) => `s2b_payment:${orderKey(order)}`;
@@ -23,11 +23,16 @@ export async function paySwapWithWallet(wallet: Wallet, order: SwapOrder, onSubm
 async function sendPayment(wallet: Wallet, order: SwapOrder, onSubmitted: (hash: string) => void) {
   if (order.status !== "waiting" || Date.parse(order.expiresAt) <= Date.now()) throw new Error("The deposit window is closed. Do not send funds.");
   if (savedPaymentHash(order)) throw new Error("A payment was already submitted. Wait for the swap status before sending again.");
+  const probe = `${attemptKey(order)}:storage-check`;
+  try { localStorage.setItem(probe, "ok"); localStorage.removeItem(probe); }
+  catch { throw new Error("This browser cannot save payment status. Nothing was signed or sent. Use your wallet directly."); }
   const sdk = await import("@stellar/stellar-sdk");
   const coin = order.depositCoin.toUpperCase();
   if (!["XLM", "USDC"].includes(coin) || (order.depositNetwork && order.depositNetwork !== "stellar") || !sdk.StrKey.isValidEd25519PublicKey(order.depositAddress)) throw new Error("This deposit cannot be sent with a Stellar wallet.");
   const server = new sdk.Horizon.Server("https://horizon.stellar.org");
-  const [account, fee] = await Promise.all([server.loadAccount(wallet.address), server.fetchBaseFee()]);
+  const [account, fee, balance] = await Promise.all([server.loadAccount(wallet.address), server.fetchBaseFee(), loadBalances(wallet.address)]);
+  const paymentAmount = Number(order.depositAmount);
+  if (coin === "XLM" ? paymentAmount > balance.xlmSpendable : paymentAmount > balance.usdc || balance.xlmSpendable < fee / 1e7) throw new Error("Insufficient spendable balance after Stellar reserves and network fees. Nothing was signed or sent.");
   const asset = coin === "XLM" ? sdk.Asset.native() : new sdk.Asset("USDC", ASSET_ISSUERS.USDC);
   const seconds = Math.min(120, Math.floor((Date.parse(order.expiresAt) - Date.now()) / 1000));
   if (seconds <= 0) throw new Error("The deposit window is closed. Do not send funds.");
