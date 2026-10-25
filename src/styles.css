@@ -97,7 +97,7 @@
   white-space: nowrap;
 }
 .s2b-wordmark span { font-size: inherit; }
-.s2b-wordmark .s2b-wordmark-two { font-style: italic; font-weight: 400; padding-inline: 0.04em; }
+.s2b-wordmark .s2b-wordmark-two { font-style: italic; font-weight: 400; padding-inline: 0.06em 0.16em; }
 @media (max-width: 420px) { .s2b-wordmark { font-size: 14px; } }
 
 @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
