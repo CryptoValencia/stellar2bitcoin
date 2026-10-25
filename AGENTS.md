@@ -19,3 +19,6 @@
 - Guest swap orders are stored privately with an HttpOnly session capability hashed in the database; server handlers verify that capability before privileged reads, and provider status—not timers—determines completion.
 - SideShift, FixedFloat and ChangeNOW quotes are fetched server-side in one call, signed, and the highest BTC output is preselected; provider secrets (e.g. FixedFloat order token) are stored only in the database, never returned to the browser.
 - Quote failures travel as safe typed results to the swap UI; show provider-sourced route limits when available and allow retry rather than silently displaying no price.
+- Recent swaps use the existing HttpOnly session capability and session-scoped request IDs; history returns only normalized orders, never provider secrets.
+- Wallet payments use dynamically imported Stellar SDK and official wallet signers, verify the signed transaction matches the prepared Mainnet payment, and preserve an attempted transaction hash to prevent blind resubmission.
+- Explorer links require real validated on-chain transaction hashes; Lightning hashes are never linked as Bitcoin transactions.

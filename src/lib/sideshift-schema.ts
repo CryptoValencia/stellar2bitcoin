@@ -31,6 +31,9 @@ export const shiftSchema = z.object({
   depositAmount: z.string().refine(positiveFinite), settleAmount: z.string().refine(positiveFinite),
   expiresAt: z.string().refine((v) => Number.isFinite(Date.parse(v))),
   settleAddress: z.string(), depositCoin: z.string(), settleCoin: z.string(),
+  depositNetwork: z.string().nullish(), settleNetwork: z.string().nullish(),
+  depositTxHash: z.string().regex(/^[a-f0-9]{64}$/i).nullish(),
+  settleTxHash: z.string().regex(/^[a-f0-9]{64}$/i).nullish(),
 });
 export type SwapOrder = z.infer<typeof shiftSchema>;
 export const TERMINAL_STATUSES = ["settled", "refunded", "expired"];

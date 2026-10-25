@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
+import { History, Wallet as WalletIcon } from "lucide-react";
+import { RecentSwaps } from "@/components/s2b/RecentSwaps";
+import { shortcutAmount } from "@/lib/swap-extras";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
 import { getMarketPrices, type MarketPrices } from "@/lib/market.functions";
 import { chooseExecutableQuotes, orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
@@ -56,6 +59,9 @@ function Index() {
   const [requestId, setRequestId] = useState<string | null>(null);
   const [prices, setPrices] = useState<MarketPrices | null>(null);
   const [more, setMore] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [orderRequestId, setOrderRequestId] = useState<string | undefined>();
+  const [historyOrder, setHistoryOrder] = useState<{ order: SwapOrder; requestId: string } | null>(null);
   const createOrder = useServerFn(createSwapOrder);
   const recoverOrder = useServerFn(getSwapOrder);
   const loadPrices = useServerFn(getMarketPrices);
@@ -68,7 +74,7 @@ function Index() {
   }, [loadPrices]);
   useEffect(() => {
     let active = true;
-    recoverOrder().then((result) => {
+    recoverOrder({ data: {} }).then((result) => {
       if (active && result.ok && result.order && !orderIsFinal(result.order.status)) setOrder(result.order);
     }).catch(() => {});
     return () => { active = false; };
@@ -135,7 +141,7 @@ function Index() {
         destination: dest, refundAddress: reverse ? refund : wallet.address,
         requestId: id, quote: quote.snapshot, quoteSignature: quote.quoteSignature,
       } });
-      if (result.ok) { setOrder(result.order); setExecuting(true); setRequestId(null); }
+      if (result.ok) { setOrder(result.order); setOrderRequestId(id); setExecuting(true); setRequestId(null); }
       else setOrderError(result.error);
     } catch { setOrderError("Couldn't confirm your order. No payment was sent; please retry this request."); }
     finally { setCreating(false); }
@@ -184,8 +190,8 @@ function Index() {
               </div>
             ) : (
               <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <button disabled={!wallet} onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))}
-                  className="rounded-full border border-border px-3 py-1 font-bold text-foreground transition hover:bg-muted disabled:opacity-40">MAX</button>
+                <div className="flex gap-1">{([25, 50, 100] as const).map((percent) => <Button key={percent} variant="outline" size="sm" disabled={!wallet} onClick={() => setAmount(shortcutAmount(balance, percent, token))}
+                  className="h-7 rounded-full px-2 text-[10px]">{percent === 100 ? "MAX" : `${percent}%`}</Button>)}</div>
                 <span>{amt > 0 && prices ? `≈ $${(amt * (token === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}</span>
               </div>
             )}
@@ -220,6 +226,7 @@ function Index() {
             <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={reverse ? "Your Stellar address (G…)" : net === "lightning" ? "Lightning invoice (lnbc…)" : "Your BTC address (bc1…)"}
               className={`mt-4 w-full rounded-[10px] bg-muted px-3 py-3 text-xs outline-none transition ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground/40"}`} />
             {addr !== "empty" && <div className={`mt-2 text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{ADDR_LABEL[addr]?.[0]}</div>}
+            {reverse && wallet && <Button variant="link" size="sm" className="mt-2 h-auto max-w-full whitespace-normal p-0 text-[11px]" onClick={() => setDest(wallet.address)}><WalletIcon />Use my connected wallet</Button>}
           </div>
         </div>
 
@@ -267,10 +274,13 @@ function Index() {
         </Button>
         {orderError && <p role="alert" className="mt-3 text-xs text-destructive">{orderError}</p>}
         {order && !orderIsFinal(order.status) && <Button variant="link" className="mt-2 w-full text-xs" onClick={() => setExecuting(true)}>View current swap</Button>}
+        <div className="mt-4 flex justify-center"><Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:bg-muted! hover:text-foreground!" onClick={() => setHistoryOpen(true)}><History />Recent swaps</Button></div>
       </main>
       {executing && order && (
-        <ExecutionModal order={order} onClose={() => setExecuting(false)} />
+        <ExecutionModal key={`${order.provider}:${order.id}`} order={order} wallet={wallet} requestId={orderRequestId} onClose={() => setExecuting(false)} />
       )}
+      {historyOpen && <RecentSwaps onClose={() => setHistoryOpen(false)} onSelect={(recent, id) => { setHistoryOrder({ order: recent, requestId: id }); setHistoryOpen(false); }} />}
+      {historyOrder && <ExecutionModal key={`${historyOrder.order.provider}:${historyOrder.order.id}`} order={historyOrder.order} wallet={wallet} requestId={historyOrder.requestId} onClose={() => setHistoryOrder(null)} />}
     </div>
   );
 }

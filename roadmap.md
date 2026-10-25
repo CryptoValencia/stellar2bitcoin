@@ -1,5 +1,10 @@
 # Roadmap
 
+- [x] Añadir pago firmado desde la wallet conectada y acceso rápido a su dirección de recepción (firma, rechazo y bloqueo de pagos repetidos probados).
+- [x] Mostrar enlaces a exploradores únicamente para hashes reales del depósito y del pago (pendiente recepción de hashes de una orden real).
+- [x] Añadir historial privado de swaps recientes, recuperable en este navegador (privacidad probada; recuperación de una orden real pendiente de fondos).
+- [x] Añadir atajos 25%, 50% y MAX sin superar el saldo disponible.
+
 - [x] Pulir separación del título A3 y sustituir light/dark por sol y luna.
 
 - [x] Mostrar el mínimo real al introducir una cantidad sin cotización y comprobar recuperación con 1000 XLM.

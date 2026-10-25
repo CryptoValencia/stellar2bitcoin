@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { quoteInput, orderInput, shiftSchema, type QuoteSnap, type SwapOrder } from "./sideshift-schema";
+import { z } from "zod";
+import { transactionHash } from "./swap-extras";
 import { QuoteAmountRangeError } from "./quote-safety";
 
 function signingKey(hash: string) {
@@ -68,7 +70,8 @@ export const createSwapOrder = createServerFn({ method: "POST" })
       try {
         if (provider === "sideshift") {
           const { AFFILIATE_ID } = await import("./sideshift-schema");
-          const raw = await sideShiftRequest("/shifts/fixed", secret!, ip, { quoteId: data.quote.id, affiliateId: AFFILIATE_ID, settleAddress: data.destination, refundAddress: data.refundAddress, externalId: data.requestId }) as object;
+          if (!secret) throw new Error("Swap service isn't configured.");
+          const raw = await sideShiftRequest("/shifts/fixed", secret, ip, { quoteId: data.quote.id, affiliateId: AFFILIATE_ID, settleAddress: data.destination, refundAddress: data.refundAddress, externalId: data.requestId }) as object;
           result = { order: parseOrder({ ...raw, provider: "sideshift" }), secret: {} };
         } else {
           const p = await import("./providers.server");
@@ -84,13 +87,27 @@ export const createSwapOrder = createServerFn({ method: "POST" })
     } catch (error) { return { ok: false as const, error: error instanceof Error ? error.message : "Couldn't create the swap. No funds were sent." }; }
   });
 
-export const getSwapOrder = createServerFn({ method: "GET" }).handler(async () => {
+export const getRecentSwapOrders = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { sessionHash } = await import("./sideshift.server");
+    const hash = await sessionHash();
+    if (!hash) return { ok: true as const, orders: [] };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.from("swap_orders").select("request_id,created_at,order_data").eq("session_hash", hash).not("shift_id", "is", null).order("created_at", { ascending: false }).limit(20);
+    if (error) throw error;
+    return { ok: true as const, orders: (data ?? []).flatMap((row) => row.order_data ? [{ requestId: row.request_id, createdAt: row.created_at, order: readRow(row.order_data).order }] : []) };
+  } catch { return { ok: false as const, error: "Couldn't load recent swaps. Please retry." }; }
+});
+
+export const getSwapOrder = createServerFn({ method: "GET" }).inputValidator((input: unknown) => z.object({ requestId: z.string().uuid().optional() }).parse(input)).handler(async ({ data: input }) => {
   try {
     const { sessionHash, sideShiftRequest, parseOrder } = await import("./sideshift.server");
     const hash = await sessionHash();
     if (!hash) return { ok: true as const, order: null };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin.from("swap_orders").select("id,shift_id,order_data").eq("session_hash", hash).not("shift_id", "is", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    let query = supabaseAdmin.from("swap_orders").select("id,shift_id,order_data").eq("session_hash", hash).not("shift_id", "is", null);
+    if (input.requestId) query = query.eq("request_id", input.requestId);
+    const { data, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (error) throw new Error("Couldn't recover your swap. Please try again.");
     if (!data?.shift_id || !data.order_data) return { ok: true as const, order: null };
     const row = readRow(data.order_data);
@@ -104,8 +121,8 @@ export const getSwapOrder = createServerFn({ method: "GET" }).handler(async () =
     } else {
       const secret = process.env["SIDESHIFT_API_KEY"];
       if (!secret) throw new Error("Swap status unavailable.");
-      const fresh = await sideShiftRequest(`/shifts/${encodeURIComponent(row.order.id)}`, secret) as { status?: string };
-      order = parseOrder({ ...row.order, status: fresh.status ?? row.order.status });
+      const fresh = await sideShiftRequest(`/shifts/${encodeURIComponent(row.order.id)}`, secret) as { status?: string; depositHash?: string; settleHash?: string; depositNetwork?: string; settleNetwork?: string };
+      order = parseOrder({ ...row.order, status: fresh.status ?? row.order.status, depositNetwork: fresh.depositNetwork ?? row.order.depositNetwork, settleNetwork: fresh.settleNetwork ?? row.order.settleNetwork, depositTxHash: transactionHash(fresh.depositHash) ?? row.order.depositTxHash, settleTxHash: transactionHash(fresh.settleHash) ?? row.order.settleTxHash });
     }
     await supabaseAdmin.from("swap_orders").update({ order_data: { order, secret: row.secret }, state: order.status }).eq("id", data.id).eq("session_hash", hash);
     return { ok: true as const, order };
