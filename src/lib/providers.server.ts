@@ -3,12 +3,8 @@ import { quoteSnapshotSchema, shiftSchema, type QuoteSnap, type SwapOrder } from
 import type { z } from "zod";
 import type { quoteInput } from "./sideshift-schema";
 import { transactionHash } from "./swap-extras";
+import { exactPayout } from "./order-safety";
 type QuoteIn = z.infer<typeof quoteInput>;
-
-const PRICE_TOLERANCE = 0.999;
-function priceHeld(snapshot: QuoteSnap, settle: unknown) {
-  return Number(settle) >= Number(snapshot.settleAmount) * PRICE_TOLERANCE;
-}
 
 // ---------- FixedFloat ----------
 async function ffSign(secret: string, body: string) {
@@ -53,12 +49,17 @@ export async function ffQuote(data: QuoteIn): Promise<QuoteSnap> {
   return quoteSnapshotSchema.parse({ ...data, id: `ff-${crypto.randomUUID()}`, settleAmount: String(d?.to?.amount), expiresAt: new Date(Date.now() + 90_000).toISOString(), provider: "fixedfloat" });
 }
 export async function ffCreate(snap: QuoteSnap, destination: string, refundAddress: string) {
+  // The price endpoint cannot lock an order quote. Existing orders remain trackable,
+  // but new execution is disabled until an explicit repricing confirmation flow exists.
+  throw new Error("This route cannot preserve the confirmed price. Refresh for another live route.");
+  /*
   const fromCcy = snap.from === "BTC" ? "BTC" : "XLM";
   const toCcy = snap.from === "BTC" ? "XLM" : "BTC";
   const d = await ff("create", { type: "fixed", fromCcy, toCcy, direction: "from", amount: snap.amount, toAddress: destination, refundAddress });
   const order = ffOrder(d, { depositCoin: fromCcy, settleCoin: toCcy });
-  if (!priceHeld(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
+  if (!exactPayout(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
   return { order, secret: { token: String(d.token) } };
+  */
 }
 export async function ffStatus(id: string, token: string, prev?: SwapOrder) {
   return ffOrder(await ff("order", { id, token }), { depositCoin: prev?.depositCoin ?? "xlm", settleCoin: prev?.settleCoin ?? "btc" });
@@ -85,6 +86,7 @@ export async function cnQuote(data: QuoteIn): Promise<QuoteSnap> {
   const to = reverse ? { currency: "xlm", network: "xlm" } : { currency: "btc", network: "btc" };
   const q = new URLSearchParams({ fromCurrency: from.currency, toCurrency: to.currency, fromAmount: String(data.amount), fromNetwork: from.network, toNetwork: to.network, flow: "fixed-rate", type: "direct", useRateId: "true" });
   const j = await cn(`exchange/estimated-amount?${q}`);
+  if (!j.rateId || !j.validUntil || Date.parse(j.validUntil) <= Date.now()) throw new Error("Quote expired. Please retry.");
   return quoteSnapshotSchema.parse({ ...data, id: String(j.rateId), settleAmount: String(j.toAmount), expiresAt: String(j.validUntil), provider: "changenow" });
 }
 export async function cnCreate(snap: QuoteSnap, destination: string, refundAddress: string, externalId: string) {
@@ -97,7 +99,7 @@ export async function cnCreate(snap: QuoteSnap, destination: string, refundAddre
     depositAmount: String(j.fromAmount ?? snap.amount), settleAmount: String(j.toAmount), expiresAt: snap.expiresAt,
     settleAddress: String(j.payoutAddress ?? destination), depositCoin: from.currency, settleCoin: to.currency,
   });
-  if (!priceHeld(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
+  if (!exactPayout(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
   return { order, secret: {} };
 }
 export async function cnStatus(prev: SwapOrder) {
