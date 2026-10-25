@@ -44,7 +44,7 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
           </div>
         </div>
         
-        <Button variant="outline" size="icon" onClick={() => setLight(!light)} aria-label={light ? "Switch to dark mode" : "Switch to light mode"} title={light ? "Switch to dark mode" : "Switch to light mode"} className="relative ml-auto h-9 w-9 shrink-0 overflow-hidden rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+        <Button variant="outline" size="icon" onClick={() => setLight(!light)} aria-label={light ? "Switch to dark mode" : "Switch to light mode"} title={light ? "Switch to dark mode" : "Switch to light mode"} className="relative ml-auto h-9 w-9 shrink-0 overflow-hidden rounded-full text-muted-foreground transition-colors hover:bg-muted! hover:text-foreground!">
           <Sun aria-hidden="true" className={`absolute h-4 w-4 transition-all duration-300 ${light ? "-rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`} />
           <Moon aria-hidden="true" className={`absolute h-4 w-4 transition-all duration-300 ${light ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"}`} />
         </Button>
