@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { lockCountdown, positiveFinite, quoteMatches } from "./quote-safety";
 import { signQuote, verifyQuote } from "./quote-proof.server";
-const input = { from: "USDC", amount: 100, lightning: false };
+const input = { from: "USDC", to: "BTC", amount: 100, lightning: false };
 const quote = { ...input, id: "verified-quote", settleAmount: "0.00118169", expiresAt: "2026-10-19T18:00:00Z" };
 const now = Date.parse("2026-10-19T17:50:00Z");
+const reverseInput = { from: "BTC", to: "XLM", amount: 0.001, lightning: false };
+const reverseQuote = { ...reverseInput, id: "reverse-quote", settleAmount: "10.5", expiresAt: "2026-10-19T18:00:00Z" };
 describe("quote integrity", () => {
-  it("rejects zero, negative and non-finite BTC outputs", () => {
+  it("rejects zero, negative and non-finite outputs", () => {
     for (const value of [0, -1, "Infinity", "NaN"]) expect(positiveFinite(value)).toBe(false);
     expect(positiveFinite("0.00118169")).toBe(true);
   });
@@ -14,6 +16,12 @@ describe("quote integrity", () => {
     expect(quoteMatches(quote, { ...input, amount: 1000 }, now)).toBe(false);
     expect(quoteMatches(quote, { ...input, from: "XLM" }, now)).toBe(false);
     expect(quoteMatches(quote, { ...input, lightning: true }, now)).toBe(false);
+  });
+  it("validates the reverse direction (BTC to Stellar) independently", () => {
+    expect(quoteMatches(reverseQuote, reverseInput, now)).toBe(true);
+    expect(quoteMatches(reverseQuote, { ...reverseInput, to: "USDC" }, now)).toBe(false);
+    expect(quoteMatches(reverseQuote, { ...reverseInput, lightning: true }, now)).toBe(false);
+    expect(quoteMatches(reverseQuote, { ...reverseInput, amount: 0.002 }, now)).toBe(false);
   });
   it("rejects quotes at their exact expiry", () => {
     expect(quoteMatches(quote, input, Date.parse(quote.expiresAt))).toBe(false);

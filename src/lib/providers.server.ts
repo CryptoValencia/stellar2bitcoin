@@ -28,28 +28,37 @@ async function ff(path: string, payload: object) {
   return j.data;
 }
 const FF_STATUS: Record<string, string> = { NEW: "waiting", PENDING: "pending", EXCHANGE: "processing", WITHDRAW: "settling", DONE: "settled", EXPIRED: "expired", EMERGENCY: "review" };
-function ffOrder(d: any): SwapOrder {
+function ffOrder(d: any, fallback: { depositCoin: string; settleCoin: string }): SwapOrder {
   const exp = Number(d?.time?.expiration);
   return shiftSchema.parse({
     provider: "fixedfloat", id: String(d.id), status: FF_STATUS[d.status] ?? "processing",
     depositAddress: d.from?.address, depositMemo: d.from?.tag ?? null, depositAmount: String(d.from?.amount),
     settleAmount: String(d.to?.amount), expiresAt: new Date((exp || Date.now() / 1000 + 1800) * 1000).toISOString(),
-    settleAddress: String(d.to?.address ?? ""), depositCoin: "xlm", settleCoin: "btc",
+    settleAddress: String(d.to?.address ?? ""),
+    depositCoin: String(d.from?.currency ?? fallback.depositCoin).toLowerCase(),
+    settleCoin: String(d.to?.currency ?? fallback.settleCoin).toLowerCase(),
   });
 }
 export async function ffQuote(data: QuoteIn): Promise<QuoteSnap> {
-  if (data.from !== "XLM" || data.lightning) throw new Error("unsupported");
-  const d = await ff("price", { type: "fixed", fromCcy: "XLM", toCcy: "BTC", direction: "from", amount: data.amount });
+  const supported = data.from === "BTC" ? data.to === "XLM" : data.from === "XLM" && data.to === "BTC";
+  if (data.lightning || !supported) throw new Error("unsupported");
+  const fromCcy = data.from === "BTC" ? "BTC" : "XLM";
+  const toCcy = data.from === "BTC" ? "XLM" : "BTC";
+  const d = await ff("price", { type: "fixed", fromCcy, toCcy, direction: "from", amount: data.amount });
   if (d?.errors?.length) throw new Error("Amount out of range");
   return quoteSnapshotSchema.parse({ ...data, id: `ff-${crypto.randomUUID()}`, settleAmount: String(d?.to?.amount), expiresAt: new Date(Date.now() + 90_000).toISOString(), provider: "fixedfloat" });
 }
 export async function ffCreate(snap: QuoteSnap, destination: string, refundAddress: string) {
-  const d = await ff("create", { type: "fixed", fromCcy: "XLM", toCcy: "BTC", direction: "from", amount: snap.amount, toAddress: destination, refundAddress });
-  const order = ffOrder(d);
+  const fromCcy = snap.from === "BTC" ? "BTC" : "XLM";
+  const toCcy = snap.from === "BTC" ? "XLM" : "BTC";
+  const d = await ff("create", { type: "fixed", fromCcy, toCcy, direction: "from", amount: snap.amount, toAddress: destination, refundAddress });
+  const order = ffOrder(d, { depositCoin: fromCcy, settleCoin: toCcy });
   if (!priceHeld(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
   return { order, secret: { token: String(d.token) } };
 }
-export async function ffStatus(id: string, token: string) { return ffOrder(await ff("order", { id, token })); }
+export async function ffStatus(id: string, token: string, prev?: SwapOrder) {
+  return ffOrder(await ff("order", { id, token }), { depositCoin: prev?.depositCoin ?? "xlm", settleCoin: prev?.settleCoin ?? "btc" });
+}
 
 // ---------- ChangeNOW (via connector gateway) ----------
 async function cn(path: string, init?: { method?: string; body?: object }) {
@@ -66,16 +75,23 @@ async function cn(path: string, init?: { method?: string; body?: object }) {
 const CN_STATUS: Record<string, string> = { new: "waiting", waiting: "waiting", confirming: "pending", exchanging: "processing", sending: "settling", finished: "settled", failed: "review", refunded: "refunded", verifying: "review", expired: "expired" };
 export async function cnQuote(data: QuoteIn): Promise<QuoteSnap> {
   if (data.lightning) throw new Error("unsupported");
-  const q = new URLSearchParams({ fromCurrency: data.from.toLowerCase(), toCurrency: "btc", fromAmount: String(data.amount), fromNetwork: "xlm", toNetwork: "btc", flow: "fixed-rate", type: "direct", useRateId: "true" });
+  const reverse = data.from === "BTC";
+  if (reverse && data.to !== "XLM") throw new Error("unsupported");
+  const from = reverse ? { currency: "btc", network: "btc" } : { currency: data.from.toLowerCase(), network: "xlm" };
+  const to = reverse ? { currency: "xlm", network: "xlm" } : { currency: "btc", network: "btc" };
+  const q = new URLSearchParams({ fromCurrency: from.currency, toCurrency: to.currency, fromAmount: String(data.amount), fromNetwork: from.network, toNetwork: to.network, flow: "fixed-rate", type: "direct", useRateId: "true" });
   const j = await cn(`exchange/estimated-amount?${q}`);
   return quoteSnapshotSchema.parse({ ...data, id: String(j.rateId), settleAmount: String(j.toAmount), expiresAt: String(j.validUntil), provider: "changenow" });
 }
 export async function cnCreate(snap: QuoteSnap, destination: string, refundAddress: string, externalId: string) {
-  const j = await cn("exchange", { method: "POST", body: { fromCurrency: snap.from.toLowerCase(), toCurrency: "btc", fromNetwork: "xlm", toNetwork: "btc", fromAmount: String(snap.amount), address: destination, refundAddress, flow: "fixed-rate", type: "direct", rateId: snap.id, userId: externalId } });
+  const reverse = snap.from === "BTC";
+  const from = reverse ? { currency: "btc", network: "btc" } : { currency: snap.from.toLowerCase(), network: "xlm" };
+  const to = reverse ? { currency: "xlm", network: "xlm" } : { currency: "btc", network: "btc" };
+  const j = await cn("exchange", { method: "POST", body: { fromCurrency: from.currency, toCurrency: to.currency, fromNetwork: from.network, toNetwork: to.network, fromAmount: String(snap.amount), address: destination, refundAddress, flow: "fixed-rate", type: "direct", rateId: snap.id, userId: externalId } });
   const order = shiftSchema.parse({
     provider: "changenow", id: String(j.id), status: "waiting", depositAddress: j.payinAddress, depositMemo: j.payinExtraId || null,
     depositAmount: String(j.fromAmount ?? snap.amount), settleAmount: String(j.toAmount), expiresAt: snap.expiresAt,
-    settleAddress: String(j.payoutAddress ?? destination), depositCoin: snap.from.toLowerCase(), settleCoin: "btc",
+    settleAddress: String(j.payoutAddress ?? destination), depositCoin: from.currency, settleCoin: to.currency,
   });
   if (!priceHeld(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
   return { order, secret: {} };

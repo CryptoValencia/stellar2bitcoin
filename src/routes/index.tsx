@@ -10,17 +10,17 @@ import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
 import {
-  fetchAllQuotes, validateDestination,
-  type BtcNet, type Quote, type RouteId, type Token,
+  fetchAllQuotes, validateDestination, validateStellar,
+  type BtcNet, type Quote, type RouteId, type SwapCoin, type Token,
 } from "@/services/aggregatorService";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Stellar2Bitcoin — Swap XLM & USDC to BTC" },
-      { name: "description", content: "Cross-chain aggregator routing Stellar assets to Bitcoin mainnet and Lightning at the best rate." },
+      { title: "Stellar2Bitcoin — Swap XLM & USDC ⇄ BTC" },
+      { name: "description", content: "Swap Stellar assets to Bitcoin and Bitcoin back to Stellar at the best live rate, on-chain or Lightning." },
       { property: "og:title", content: "Stellar2Bitcoin — S2B Protocol" },
-      { property: "og:description", content: "Swap Stellar assets to Bitcoin with a simple wallet connection, clear rates and deposit tracking." },
+      { property: "og:description", content: "Swap Stellar assets and Bitcoin in both directions with a simple wallet connection, clear rates and deposit tracking." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -33,7 +33,8 @@ const ADDR_LABEL: Record<string, [string, string]> = {
   segwit: ["VALID SEGWIT (bc1q)", "text-acid"],
   legacy: ["VALID LEGACY (P2PKH/P2SH)", "text-acid"],
   lightning: ["VALID BOLT11 INVOICE", "text-acid"],
-  invalid: ["INVALID BTC ADDRESS", "text-destructive"],
+  stellar: ["VALID STELLAR ADDRESS (G…)", "text-acid"],
+  invalid: ["INVALID ADDRESS", "text-destructive"],
 };
 
 function Index() {
@@ -42,7 +43,9 @@ function Index() {
   const [amount, setAmount] = useState("");
   const [net, setNet] = useState<BtcNet>("mainnet");
   const [dest, setDest] = useState("");
-    const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [refund, setRefund] = useState("");
+  const [reverse, setReverse] = useState(false);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
   const [scanning, setScanning] = useState(false);
   const [selected, setSelected] = useState<RouteId | null>(null);
   const [executing, setExecuting] = useState(false);
@@ -79,7 +82,14 @@ function Index() {
   }, []);
 
   const amt = parseFloat(amount) || 0;
-  const balance = wallet ? { XLM: wallet.xlm, USDC: wallet.usdc }[token] : 0;
+  const fromCoin: SwapCoin = reverse ? "BTC" : token;
+  const toCoin: SwapCoin = reverse ? token : "BTC";
+  const balance = wallet && !reverse ? { XLM: wallet.xlm, USDC: wallet.usdc }[token] : 0;
+
+  // The Stellar wallet doubles as the payout address when receiving XLM/USDC.
+  useEffect(() => {
+    if (reverse && wallet) setDest((d) => d || wallet.address);
+  }, [reverse, wallet]);
 
   useEffect(() => {
     setQuotes([]); setSelected(null); setOrderError("");
@@ -88,22 +98,28 @@ function Index() {
     let cancel = false;
     const t = setTimeout(async () => {
       let q: Quote[] = [];
-      try { q = await fetchAllQuotes(token, amt, net); } catch { /* unavailable */ }
+      try { q = await fetchAllQuotes(fromCoin, toCoin, amt, net); } catch { /* unavailable */ }
       if (cancel) return;
       const executable = chooseExecutableQuotes(q);
       setQuotes(executable); setScanning(false);
       setSelected((s) => (executable.find((x) => x.id === s) ? s : executable[0]?.id ?? null));
     }, 350);
     return () => { cancel = true; clearTimeout(t); };
-  }, [amt, token, net, nonce]);
+  }, [amt, fromCoin, toCoin, net, nonce]);
 
   const candidate = quotes.find((q) => q.id === selected);
-  const quote = candidate?.snapshot && quoteMatches(candidate.snapshot, { from: token, amount: amt, lightning: net === "lightning" }, now || Date.now()) ? candidate : null;
-  const addr = validateDestination(dest, net);
+  const quote = candidate?.snapshot && quoteMatches(candidate.snapshot, { from: fromCoin, to: toCoin, amount: amt, lightning: net === "lightning" }, now || Date.now()) ? candidate : null;
+  const addr = reverse ? validateStellar(dest) : validateDestination(dest, net);
+  const refundAddr = reverse ? validateDestination(refund, "mainnet") : "empty";
+  const destOk = reverse ? addr === "stellar" : addr !== "empty" && addr !== "invalid";
+  const refundOk = !reverse || (refundAddr === "taproot" || refundAddr === "segwit" || refundAddr === "legacy");
   const fastest = useMemo(() => quotes.reduce<Quote | null>((a, b) => (b.etaMin !== null && (!a || a.etaMin === null || b.etaMin < a.etaMin) ? b : a), null), [quotes]);
+  const outDecimals = reverse ? (token === "USDC" ? 2 : 4) : 8;
 
-  const blocker = !wallet ? "CONNECT WALLET FIRST" : amt <= 0 ? "ENTER AMOUNT" : amt > balance ? "INSUFFICIENT BALANCE"
-    : addr === "empty" || addr === "invalid" ? "ENTER VALID DESTINATION" : scanning ? "FINDING PRICE" : !quote ? "SWAP UNAVAILABLE" : null;
+  const blocker = !wallet ? "CONNECT WALLET FIRST" : amt <= 0 ? "ENTER AMOUNT" : !reverse && amt > balance ? "INSUFFICIENT BALANCE"
+    : !refundOk ? "ENTER VALID REFUND ADDRESS" : !destOk ? "ENTER VALID DESTINATION" : scanning ? "FINDING PRICE" : !quote ? "SWAP UNAVAILABLE" : null;
+
+  const flip = () => { setReverse((r) => !r); setDest(""); setRefund(""); };
 
   const startSwap = async () => {
     if (!wallet) { document.getElementById("connect-wallet")?.click(); return; }
@@ -113,12 +129,27 @@ function Index() {
     const id = requestId ?? crypto.randomUUID();
     setRequestId(id);
     try {
-      const result = await createOrder({ data: { from: token, amount: amt, lightning: net === "lightning", destination: dest, refundAddress: wallet.address, requestId: id, quote: quote.snapshot, quoteSignature: quote.quoteSignature } });
+      const result = await createOrder({ data: {
+        from: fromCoin, to: toCoin, amount: amt, lightning: net === "lightning",
+        destination: dest, refundAddress: reverse ? refund : wallet.address,
+        requestId: id, quote: quote.snapshot, quoteSignature: quote.quoteSignature,
+      } });
       if (result.ok) { setOrder(result.order); setExecuting(true); setRequestId(null); }
       else setOrderError(result.error);
     } catch { setOrderError("Couldn't confirm your order. No payment was sent; please retry this request."); }
     finally { setCreating(false); }
   };
+
+  const netToggle = (
+    <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
+      {(["mainnet", "lightning"] as const).map((n) => (
+        <button key={n} onClick={() => { setNet(n); setDest(""); }}
+          className={`rounded-full px-2.5 py-1 transition ${net === n ? "bg-panel text-foreground shadow-sm" : "text-muted-foreground"}`}>
+          {n === "mainnet" ? "On-chain" : "Lightning"}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -127,49 +158,65 @@ function Index() {
         <div className="relative">
           {/* Sell */}
           <div className="panel p-5">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">From</div>
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">From</div>
+              {reverse && netToggle}
+            </div>
             <div className="mt-3 flex items-start justify-between gap-4">
-              <div className="shrink-0">
-                <TokenSelect value={token} onChange={setToken} />
-                <div className="mt-2 text-xs text-muted-foreground">{wallet ? `${balance.toLocaleString()} ${token}` : "—"}</div>
-              </div>
+              {reverse ? (
+                <span className="flex shrink-0 items-center gap-2.5 rounded-full border border-border bg-muted py-1.5 pl-1.5 pr-4 text-xl font-bold"><TokenLogo symbol="BTC" size={32} /> BTC</span>
+              ) : (
+                <div className="shrink-0">
+                  <TokenSelect value={token} onChange={setToken} />
+                  <div className="mt-2 text-xs text-muted-foreground">{wallet ? `${balance.toLocaleString()} ${token}` : "—"}</div>
+                </div>
+              )}
               <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="0"
                 className="w-full min-w-0 bg-transparent text-right text-4xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/40" />
             </div>
-            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-              <button disabled={!wallet} onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))}
-                className="rounded-full border border-border px-3 py-1 font-bold text-foreground transition hover:bg-muted disabled:opacity-40">MAX</button>
-              <span>{amt > 0 && prices ? `≈ $${(amt * (token === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}</span>
-            </div>
+            {reverse ? (
+              <div>
+                <div className="mt-4 text-right text-xs text-muted-foreground">{amt > 0 && prices ? `≈ $${(amt * prices.btcUsd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}</div>
+                <input value={refund} onChange={(e) => setRefund(e.target.value.trim())} placeholder="Your BTC address (refund if the swap fails)"
+                  className={`mt-3 w-full rounded-[10px] bg-muted px-3 py-3 text-xs outline-none transition ${refundAddr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground/40"}`} />
+                {refundAddr !== "empty" && <div className={`mt-2 text-[11px] ${ADDR_LABEL[refundAddr]?.[1]}`}>{ADDR_LABEL[refundAddr]?.[0]}</div>}
+              </div>
+            ) : (
+              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                <button disabled={!wallet} onClick={() => setAmount(String(+balance.toFixed(token === "XLM" ? 4 : 2)))}
+                  className="rounded-full border border-border px-3 py-1 font-bold text-foreground transition hover:bg-muted disabled:opacity-40">MAX</button>
+                <span>{amt > 0 && prices ? `≈ $${(amt * (token === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}</span>
+              </div>
+            )}
           </div>
 
           <div className="relative z-10 -my-3 flex justify-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full border-4 border-background bg-panel text-lg">↓</div>
+            <button onClick={flip} aria-label="Swap direction" title="Swap direction"
+              className="flex h-11 w-11 items-center justify-center rounded-full border-4 border-background bg-panel text-lg transition hover:text-acid">
+              {reverse ? "↑" : "↓"}
+            </button>
           </div>
 
           {/* Buy */}
           <div className="panel p-5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground">To</span>
-              <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
-                {(["mainnet", "lightning"] as const).map((n) => (
-                  <button key={n} onClick={() => { setNet(n); setDest(""); }}
-                    className={`rounded-full px-2.5 py-1 transition ${net === n ? "bg-panel text-foreground shadow-sm" : "text-muted-foreground"}`}>
-                    {n === "mainnet" ? "On-chain" : "Lightning"}
-                  </button>
-                ))}
-              </div>
+              {!reverse && netToggle}
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
-              <span className="flex shrink-0 items-center gap-2.5 rounded-full border border-border bg-muted py-1.5 pl-1.5 pr-4 text-xl font-bold"><TokenLogo symbol="BTC" size={32} /> BTC</span>
+              {reverse ? (
+                <div className="shrink-0"><TokenSelect value={token} onChange={setToken} /></div>
+              ) : (
+                <span className="flex shrink-0 items-center gap-2.5 rounded-full border border-border bg-muted py-1.5 pl-1.5 pr-4 text-xl font-bold"><TokenLogo symbol="BTC" size={32} /> BTC</span>
+              )}
               <div className={`min-w-0 truncate text-right text-4xl font-bold tracking-tight ${!quote || scanning ? "text-muted-foreground/40" : ""}`}>
-                {quote && !scanning ? quote.btcOut.toFixed(8) : scanning ? "…" : "—"}
+                {quote && !scanning ? quote.outAmount.toFixed(outDecimals) : scanning ? "…" : "—"}
               </div>
             </div>
             <div className="mt-1 text-right text-xs text-muted-foreground">
-              {quote && !scanning && prices ? `≈ $${(quote.btcOut * prices.btcUsd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}
+              {quote && !scanning && prices ? `≈ $${(quote.outAmount * (reverse ? (token === "XLM" ? prices.xlmUsd : 1) : prices.btcUsd)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "\u00a0"}
             </div>
-            <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={net === "lightning" ? "Lightning invoice (lnbc…)" : "Your BTC address (bc1…)"}
+            <input value={dest} onChange={(e) => setDest(e.target.value.trim())} placeholder={reverse ? "Your Stellar address (G…)" : net === "lightning" ? "Lightning invoice (lnbc…)" : "Your BTC address (bc1…)"}
               className={`mt-4 w-full rounded-[10px] bg-muted px-3 py-3 text-xs outline-none transition ${addr === "invalid" ? "ring-1 ring-destructive" : "focus:ring-1 focus:ring-foreground/40"}`} />
             {addr !== "empty" && <div className={`mt-2 text-[11px] ${ADDR_LABEL[addr]?.[1]}`}>{ADDR_LABEL[addr]?.[0]}</div>}
           </div>
@@ -187,8 +234,9 @@ function Index() {
               ))}
             </div>
           )}
-          <Detail k="Rate" v={quote && !scanning && amt && prices
-            ? `1 ${token} = ${((quote.btcOut / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.btcOut / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+          <Detail k="Rate" v={quote && !scanning && amt && prices ? (reverse
+            ? `1 BTC = ${(quote.outAmount / amt).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${toCoin} · ≈ $${((quote.outAmount / amt) * (toCoin === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+            : `1 ${token} = ${((quote.outAmount / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.outAmount / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`)
             : scanning ? "Updating…" : "—"} />
           <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
             className="flex w-full items-center justify-between text-sm">
@@ -199,11 +247,13 @@ function Index() {
             <div className="space-y-2 text-sm">
               <Detail k="Price locked" v={quote?.snapshot ? lockCountdown(quote.snapshot.expiresAt, now) : "—"} />
               <p className="text-[11px] leading-relaxed text-muted-foreground">
-                The BTC amount above is fixed for that time. It does not move with the market, and nothing is deducted when you pay.
+                The amount above is fixed for that time. It does not move with the market, and nothing is deducted when you pay.
               </p>
             </div>
           )}
-          <Detail k="Arrives" v={net === "lightning" ? "≈ 1–3 min to your wallet" : "≈ 5–10 min to your wallet"} />
+          <Detail k="Arrives" v={reverse
+            ? (net === "lightning" ? "≈ 1–3 min to your wallet" : "≈ 10–30 min to your wallet")
+            : net === "lightning" ? "≈ 1–3 min to your wallet" : "≈ 5–10 min to your wallet"} />
         </div>
 
         <Button disabled={creating || (!!blocker && !!wallet && !order)} onClick={startSwap}
