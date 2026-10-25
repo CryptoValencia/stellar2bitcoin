@@ -18,3 +18,4 @@
 - SideShift uses its documented private-key header and affiliate ID, validates supported pairs, forwards trusted visitor IP, and creates fixed orders only on explicit confirmation.
 - Guest swap orders are stored privately with an HttpOnly session capability hashed in the database; server handlers verify that capability before privileged reads, and provider status—not timers—determines completion.
 - SideShift, FixedFloat and ChangeNOW quotes are fetched server-side in one call, signed, and the highest BTC output is preselected; provider secrets (e.g. FixedFloat order token) are stored only in the database, never returned to the browser.
+- Quote failures travel as safe typed results to the swap UI; show provider-sourced route limits when available and allow retry rather than silently displaying no price.

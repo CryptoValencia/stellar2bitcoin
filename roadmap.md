@@ -1,5 +1,10 @@
 # Roadmap
 
+- [x] Pulir separación del título A3 y sustituir light/dark por sol y luna.
+
+- [x] Mostrar el mínimo real al introducir una cantidad sin cotización y comprobar recuperación con 1000 XLM.
+- [x] Aplicar logo A3 con el 2 del mismo tamaño y en cursiva, sin cambiar la tipografía del swap.
+
 - [x] Auditar cotizaciones: importes reales, caducidad, cambios de entrada y confirmación del mismo precio (19 pruebas; XLM/USDC en pantalla comprobados, orden con fondos pendiente)
 
 - [x] Corregir comparación engañosa de valor XLM→BTC y verificar cotización real sin cifras simuladas

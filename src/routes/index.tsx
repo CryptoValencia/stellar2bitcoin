@@ -10,7 +10,7 @@ import { Hud, type Wallet } from "@/components/s2b/Hud";
 import { ExecutionModal } from "@/components/s2b/ExecutionModal";
 import { TokenSelect, TokenLogo } from "@/components/s2b/TokenSelect";
 import {
-  fetchAllQuotes, validateDestination, validateStellar,
+  fetchQuoteResult, validateDestination, validateStellar,
   type BtcNet, type Quote, type RouteId, type SwapCoin, type Token,
 } from "@/services/aggregatorService";
 
@@ -47,6 +47,7 @@ function Index() {
   const [reverse, setReverse] = useState(false);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [scanning, setScanning] = useState(false);
+  const [quoteError, setQuoteError] = useState("");
   const [selected, setSelected] = useState<RouteId | null>(null);
   const [executing, setExecuting] = useState(false);
   const [order, setOrder] = useState<SwapOrder | null>(null);
@@ -92,15 +93,15 @@ function Index() {
   }, [reverse, wallet]);
 
   useEffect(() => {
-    setQuotes([]); setSelected(null); setOrderError("");
+    setQuotes([]); setSelected(null); setOrderError(""); setQuoteError("");
     if (amt <= 0 || !Number.isFinite(amt)) { setScanning(false); return; }
     setScanning(true);
     let cancel = false;
     const t = setTimeout(async () => {
-      let q: Quote[] = [];
-      try { q = await fetchAllQuotes(fromCoin, toCoin, amt, net); } catch { /* unavailable */ }
+      const result = await fetchQuoteResult(fromCoin, toCoin, amt, net);
       if (cancel) return;
-      const executable = chooseExecutableQuotes(q);
+      const executable = chooseExecutableQuotes(result.quotes);
+      setQuoteError(result.error);
       setQuotes(executable); setScanning(false);
       setSelected((s) => (executable.find((x) => x.id === s) ? s : executable[0]?.id ?? null));
     }, 350);
@@ -224,6 +225,10 @@ function Index() {
 
         {/* Details */}
         <div className="mt-5 space-y-3 px-1 text-sm">
+          {quoteError && !scanning && <div role="alert" className="space-y-2 text-xs text-muted-foreground">
+            <p>{quoteError}</p>
+            <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setNonce((n) => n + 1)}>Retry quote</Button>
+          </div>}
           {quotes.length > 1 && fastest && (
             <div className="flex rounded-full bg-muted p-0.5 text-[11px]">
               {([["cheap", "Best rate", quotes[0]], ["fast", "Fastest", fastest]] as const).map(([k, label, q]) => (
@@ -234,9 +239,9 @@ function Index() {
               ))}
             </div>
           )}
-          <Detail k="Rate" v={quote && !scanning && amt && prices ? (reverse
-            ? `1 BTC = ${(quote.outAmount / amt).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${toCoin} · ≈ $${((quote.outAmount / amt) * (toCoin === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
-            : `1 ${token} = ${((quote.outAmount / amt) * 1e8).toFixed(2)} sats · ≈ $${((quote.outAmount / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}`)
+          <Detail k="Rate" v={quote && !scanning && amt ? (reverse
+            ? `1 BTC = ${(quote.outAmount / amt).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${toCoin}${prices ? ` · ≈ $${((quote.outAmount / amt) * (toCoin === "XLM" ? prices.xlmUsd : 1)).toLocaleString(undefined, { maximumFractionDigits: 4 })}` : ""}`
+            : `1 ${token} = ${((quote.outAmount / amt) * 1e8).toFixed(2)} sats${prices ? ` · ≈ $${((quote.outAmount / amt) * prices.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 4 })}` : ""}`)
             : scanning ? "Updating…" : "—"} />
           <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
             className="flex w-full items-center justify-between text-sm">

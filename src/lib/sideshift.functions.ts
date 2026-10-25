@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { quoteInput, orderInput, shiftSchema, type QuoteSnap, type SwapOrder } from "./sideshift-schema";
+import { QuoteAmountRangeError } from "./quote-safety";
 
 function signingKey(hash: string) {
   const k = process.env["SIDESHIFT_API_KEY"] || process.env["FIXEDFLOAT_API_SECRET"];
@@ -28,10 +29,14 @@ export const getSideShiftQuote = createServerFn({ method: "POST" })
       settled.forEach((r) => { if (r.status === "rejected") console.warn("quote unavailable:", r.reason instanceof Error ? r.reason.message : r.reason); });
       const key = signingKey(hash);
       const quotes = await Promise.all(settled.flatMap((r) => r.status === "fulfilled" ? [r.value] : []).map(async (quote) => ({ outAmount: Number(quote.settleAmount), quote, quoteSignature: await signQuote(quote, key) })));
-      if (!quotes.length) return { ok: false as const, error: "Price unavailable for this amount." };
+      if (!quotes.length) {
+        const range = settled.flatMap((r) => r.status === "rejected" && r.reason instanceof QuoteAmountRangeError ? [r.reason] : [])[0];
+        return { ok: false as const, error: range?.message ?? "No live quote available for this amount and network. Try another amount or retry shortly." };
+      }
       return { ok: true as const, quotes };
     } catch (error) {
-      return { ok: false as const, error: error instanceof Error ? error.message : "Price unavailable" };
+      console.warn("quote request failed:", error instanceof Error ? error.message : "unknown error");
+      return { ok: false as const, error: "Couldn't load a live quote. Please try again shortly." };
     }
   });
 

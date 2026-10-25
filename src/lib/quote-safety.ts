@@ -1,5 +1,11 @@
 export interface QuoteContext { from: string; to: string; amount: number; lightning: boolean }
 export interface QuoteSnapshot extends QuoteContext { id: string; settleAmount: string; expiresAt: string }
+export class QuoteAmountRangeError extends Error {
+  constructor(public min: number, public max: number, public coin: string) {
+    super(`Available route limits: minimum ${min} ${coin}, maximum ${max} ${coin}.`);
+    this.name = "QuoteAmountRangeError";
+  }
+}
 export function positiveFinite(value: unknown): boolean {
   const n = Number(value);
   return Number.isFinite(n) && n > 0;

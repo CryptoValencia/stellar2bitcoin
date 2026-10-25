@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { connectWallet, WALLET_NAMES, type Wallet, type WalletName } from "@/services/walletService";
@@ -38,18 +39,14 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
     <header className="relative z-10 border-b border-border bg-background">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
         <div className="shrink-0">
-          <div className="flex items-center gap-2 text-lg font-black tracking-wider" aria-label="STELLAR2BITCOIN">
-            <span className="text-brand-xlm text-glow-xlm">STELLAR</span><span className="text-foreground">2</span><span className="text-brand-btc text-glow-btc">BITCOIN</span>
-            <span className="font-mono text-xs font-normal text-muted-foreground">// S2B_PROTOCOL v2.6</span>
-          </div>
-          <div className="font-mono text-[10px] text-acid">
-            <span className="caret mr-1 inline-block h-1.5 w-1.5 bg-acid" />[SYS_ONLINE: SOROBAN {'<>'} BTC_MAINNET]
+          <div className="s2b-wordmark text-foreground" aria-label="STELLAR2BITCOIN">
+            <span>STELLAR</span><span className="s2b-wordmark-two text-brand-btc">2</span><span>BITCOIN</span>
           </div>
         </div>
         
-        <button onClick={() => setLight(!light)} aria-label="Toggle theme" className="ml-auto rounded-[8px] bg-muted px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-          {light ? "dark" : "light"}
-        </button>
+        <Button variant="ghost" size="icon" onClick={() => setLight(!light)} aria-label={light ? "Switch to dark mode" : "Switch to light mode"} title={light ? "Switch to dark mode" : "Switch to light mode"} className="ml-auto shrink-0 text-muted-foreground hover:text-foreground">
+          {light ? <Moon className="h-4 w-4" aria-hidden="true" /> : <Sun className="h-4 w-4" aria-hidden="true" />}
+        </Button>
         {wallet ? (
           <Button variant="secondary" onClick={() => onConnect(null)} title="Disconnect wallet" aria-label="Disconnect wallet" className="chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}

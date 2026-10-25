@@ -2,6 +2,7 @@ import { getCookie, getRequestHeader, getRequestUrl, setCookie, setResponseHeade
 import { isIP } from "node:net";
 import { AFFILIATE_ID, quoteInput, quoteSnapshotSchema, shiftSchema, type SwapOrder } from "./sideshift-schema";
 import type { z } from "zod";
+import { QuoteAmountRangeError } from "./quote-safety";
 const BASE = "https://sideshift.ai/api/v2";
 export async function sideShiftRequest(path: string, secret: string, ip?: string, body?: object) {
   const headers: Record<string, string> = { "Content-Type": "application/json", "x-sideshift-secret": secret };
@@ -41,7 +42,9 @@ export async function requestQuote(data: z.infer<typeof quoteInput>, secret: str
   if (sourceOffline || targetOffline) throw new Error("This swap is temporarily unavailable.");
   const pairs = await sideShiftRequest(`/pairs?pairs=${data.from.toLowerCase()}-${depositNetwork},${data.to.toLowerCase()}-${settleNetwork}&affiliateId=${AFFILIATE_ID}`, secret, ip) as Array<{ depositCoin: string; min: string; max: string }>;
   const pair = pairs.find((p) => p.depositCoin.toUpperCase() === data.from);
-  if (!pair || data.amount < Number(pair.min) || data.amount > Number(pair.max)) throw new Error(pair ? `Amount must be between ${pair.min} and ${pair.max} ${data.from}.` : "No price available for this swap.");
+  if (!pair) throw new Error("No price available for this swap.");
+  const min = Number(pair.min), max = Number(pair.max);
+  if (Number.isFinite(min) && Number.isFinite(max) && (data.amount < min || data.amount > max)) throw new QuoteAmountRangeError(min, max, data.from);
   const quote = await sideShiftRequest("/quotes", secret, ip, { affiliateId: AFFILIATE_ID, depositCoin: data.from.toLowerCase(), depositNetwork, settleCoin: data.to.toLowerCase(), settleNetwork, depositAmount: String(data.amount) }) as { id: string; settleAmount: string; expiresAt: string };
   const snapshot = quoteSnapshotSchema.parse({ ...data, id: quote.id, settleAmount: quote.settleAmount, expiresAt: quote.expiresAt });
   if (!(Date.parse(snapshot.expiresAt) > Date.now())) throw new Error("Price expired. Please try again.");
