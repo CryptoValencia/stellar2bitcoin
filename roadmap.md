@@ -1,6 +1,7 @@
 # Roadmap
 
 - [ ] Revisar funcionamiento completo: cotizaciones reales, errores, wallet, pagos, historial y recuperación; corregir fallos encontrados.
+- [ ] Retirar referencias visibles a Lovable sin eliminar las integraciones necesarias; revisar insignia publicada.
 
 - [x] Añadir pago firmado desde la wallet conectada y acceso rápido a su dirección de recepción (firma, rechazo y bloqueo de pagos repetidos probados).
 - [x] Mostrar enlaces a exploradores únicamente para hashes reales del depósito y del pago (pendiente recepción de hashes de una orden real).
