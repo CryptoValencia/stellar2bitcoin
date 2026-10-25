@@ -2,7 +2,7 @@ export interface QuoteContext { from: string; to: string; amount: number; lightn
 export interface QuoteSnapshot extends QuoteContext { id: string; settleAmount: string; expiresAt: string }
 export class QuoteAmountRangeError extends Error {
   constructor(public min: number, public max: number, public coin: string) {
-    super(`Try an amount between ${min} and ${max} ${coin}.`);
+    super(`Available route limits: minimum ${min} ${coin}, maximum ${max} ${coin}.`);
     this.name = "QuoteAmountRangeError";
   }
 }

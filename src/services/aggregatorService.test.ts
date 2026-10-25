@@ -29,7 +29,7 @@ describe("live quote aggregation", () => {
     expect(await fetchAllQuotes("USDC", "BTC", 100, "mainnet")).toEqual([]);
   });
   it("preserves a live amount-limit error instead of silently returning no price", async () => {
-    const error = "Try an amount between 45.229682 and 176678.4452297 XLM.";
+    const error = "Available route limits: minimum 45.229682 XLM, maximum 176678.4452297 XLM.";
     vi.mocked(getSideShiftQuote).mockResolvedValue({ ok: false, error });
     expect(await fetchQuoteResult("XLM", "BTC", 2, "mainnet")).toEqual({ quotes: [], error });
   });
