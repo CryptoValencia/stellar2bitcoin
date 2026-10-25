@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { connectWallet, WALLET_NAMES, type Wallet, type WalletName } from "@/services/walletService";
@@ -43,9 +44,9 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
           </div>
         </div>
         
-        <button onClick={() => setLight(!light)} aria-label="Toggle theme" className="ml-auto rounded-[8px] bg-muted px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-          {light ? "dark" : "light"}
-        </button>
+        <Button variant="ghost" size="icon" onClick={() => setLight(!light)} aria-label={light ? "Switch to dark mode" : "Switch to light mode"} title={light ? "Switch to dark mode" : "Switch to light mode"} className="ml-auto shrink-0 text-muted-foreground hover:text-foreground">
+          {light ? <Moon className="h-4 w-4" aria-hidden="true" /> : <Sun className="h-4 w-4" aria-hidden="true" />}
+        </Button>
         {wallet ? (
           <Button variant="secondary" onClick={() => onConnect(null)} title="Disconnect wallet" aria-label="Disconnect wallet" className="chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
