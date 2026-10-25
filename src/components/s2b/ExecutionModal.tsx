@@ -9,7 +9,7 @@ import { orderIsFinal, type SwapOrder } from "@/lib/sideshift-schema";
 
 const STATUS: Record<string, string> = {
   waiting: "Awaiting deposit", pending: "Deposit detected", processing: "Processing swap",
-  review: "Under review", settling: "Sending Bitcoin", settled: "Swap complete",
+  review: "Under review", settled: "Swap complete",
   refund: "Refund required", refunding: "Refund in progress", refunded: "Refund complete", expired: "Order expired",
 };
 export function ExecutionModal({ order: initial, onClose }: { order: SwapOrder; onClose: () => void }) {
@@ -40,39 +40,46 @@ export function ExecutionModal({ order: initial, onClose }: { order: SwapOrder; 
   }, [refresh, order.status]);
   const remaining = Math.max(0, Math.floor((Date.parse(order.expiresAt) - now) / 1000));
   const depositAllowed = order.status === "waiting" && remaining > 0;
-  const uri = new URL("web+stellar:pay");
-  uri.searchParams.set("destination", order.depositAddress);
-  uri.searchParams.set("amount", order.depositAmount);
-  if (order.depositCoin.toUpperCase() !== "XLM") {
-    uri.searchParams.set("asset_code", order.depositCoin.toUpperCase());
-    // The provider only currently supports Circle USDC on Stellar.
-    uri.searchParams.set("asset_issuer", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+  const isBtcDeposit = order.depositCoin.toUpperCase() === "BTC";
+  const settleCoin = order.settleCoin.toUpperCase();
+  const statusLabel = order.status === "settling" ? (settleCoin === "BTC" ? "Sending Bitcoin" : "Sending Stellar") : STATUS[order.status] ?? "Checking swap status";
+  let uri: URL | null = null;
+  if (!isBtcDeposit) {
+    uri = new URL("web+stellar:pay");
+    uri.searchParams.set("destination", order.depositAddress);
+    uri.searchParams.set("amount", order.depositAmount);
+    if (order.depositCoin.toUpperCase() !== "XLM") {
+      uri.searchParams.set("asset_code", order.depositCoin.toUpperCase());
+      // The provider only currently supports Circle USDC on Stellar.
+      uri.searchParams.set("asset_issuer", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    }
+    if (order.depositMemo) { uri.searchParams.set("memo", order.depositMemo); uri.searchParams.set("memo_type", "MEMO_TEXT"); }
   }
-  if (order.depositMemo) { uri.searchParams.set("memo", order.depositMemo); uri.searchParams.set("memo_type", "MEMO_TEXT"); }
+  const qrValue = isBtcDeposit ? `bitcoin:${order.depositAddress}?amount=${order.depositAmount}` : uri?.toString() ?? order.depositAddress;
   const copy = async (value: string, label: string) => {
     try { await navigator.clipboard.writeText(value); setCopied(label); setTimeout(() => setCopied(""), 2000); }
     catch { setError("Couldn't copy. Select and copy the value manually."); }
   };
   return <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
     <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto bg-panel">
-      <DialogTitle className="text-lg">{STATUS[order.status] ?? "Checking swap status"}</DialogTitle>
+      <DialogTitle className="text-lg">{statusLabel}</DialogTitle>
       <DialogDescription className="text-xs">Order {order.id}</DialogDescription>
       <div className="flex items-center justify-between border-b border-border pb-4 text-sm">
-        <span>{order.depositAmount} {order.depositCoin.toUpperCase()}</span><span>→</span><span>{order.settleAmount} BTC</span>
+        <span>{order.depositAmount} {order.depositCoin.toUpperCase()}</span><span>→</span><span>{order.settleAmount} {settleCoin}</span>
       </div>
       {depositAllowed ? <>
-        <p className="text-xs text-muted-foreground">Send the exact amount and memo before the timer expires.</p>
-        <div className="flex justify-center"><div className="bg-qr-surface p-3"><QRCodeSVG value={uri.toString()} size={160} /></div></div>
+        <p className="text-xs text-muted-foreground">{isBtcDeposit ? "Send the exact amount before the timer expires." : "Send the exact amount and memo before the timer expires."}</p>
+        <div className="flex justify-center"><div className="bg-qr-surface p-3"><QRCodeSVG value={qrValue} size={160} /></div></div>
         <div className="space-y-3">
-          {[["Address", order.depositAddress], ["Amount", order.depositAmount], ...(order.depositMemo ? [["Memo", order.depositMemo]] : [])].map(([label, value]) => label && value ? <div key={label} className="flex items-center gap-2">
+          {[["Address", order.depositAddress], ["Amount", order.depositAmount], ...(!isBtcDeposit && order.depositMemo ? [["Memo", order.depositMemo]] : [])].map(([label, value]) => label && value ? <div key={label} className="flex items-center gap-2">
             <div className="min-w-0 flex-1"><div className="text-[11px] text-muted-foreground">{label}</div><div className="select-all break-all text-xs">{value}</div></div>
             <Button variant="ghost" size="icon" aria-label={`Copy ${label.toLowerCase()}`} title={`Copy ${label.toLowerCase()}`} onClick={() => copy(value, label)}>{copied === label ? <Check /> : <Copy />}</Button>
           </div> : null)}
         </div>
-        {order.depositMemo && <p className="text-xs text-destructive">The memo is required. A missing memo can prevent your funds being credited.</p>}
+        {!isBtcDeposit && order.depositMemo && <p className="text-xs text-destructive">The memo is required. A missing memo can prevent your funds being credited.</p>}
         <div className="flex justify-between text-xs"><span className="text-muted-foreground">Deposit window</span><span>{Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, "0")}</span></div>
-        <Button asChild className="btn-cta"><a href={uri.toString()}>Open wallet to send</a></Button>
-      </> : <p className="flex items-center gap-2 text-sm">{!orderIsFinal(order.status) && <LoaderCircle className="h-4 w-4 animate-spin" />}{order.status === "waiting" ? "Deposit window expired. Do not send funds." : STATUS[order.status] ?? order.status}</p>}
+        {uri && <Button asChild className="btn-cta"><a href={uri.toString()}>Open wallet to send</a></Button>}
+      </> : <p className="flex items-center gap-2 text-sm">{!orderIsFinal(order.status) && <LoaderCircle className="h-4 w-4 animate-spin" />}{order.status === "waiting" ? "Deposit window expired. Do not send funds." : statusLabel}</p>}
       <div className="text-xs"><span className="text-muted-foreground">To </span><span className="break-all">{order.settleAddress}</span></div>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       <Button variant="secondary" onClick={onClose}>{orderIsFinal(order.status) ? "Done" : "Close"}</Button>
