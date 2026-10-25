@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Revisar funcionamiento completo: cotizaciones reales, errores, wallet, pagos, historial y recuperación; corregir fallos encontrados.
+
 - [x] Añadir pago firmado desde la wallet conectada y acceso rápido a su dirección de recepción (firma, rechazo y bloqueo de pagos repetidos probados).
 - [x] Mostrar enlaces a exploradores únicamente para hashes reales del depósito y del pago (pendiente recepción de hashes de una orden real).
 - [x] Añadir historial privado de swaps recientes, recuperable en este navegador (privacidad probada; recuperación de una orden real pendiente de fondos).
