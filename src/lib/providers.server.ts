@@ -48,18 +48,10 @@ export async function ffQuote(data: QuoteIn): Promise<QuoteSnap> {
   if (d?.errors?.length) throw new Error("Amount out of range");
   return quoteSnapshotSchema.parse({ ...data, id: `ff-${crypto.randomUUID()}`, settleAmount: String(d?.to?.amount), expiresAt: new Date(Date.now() + 90_000).toISOString(), provider: "fixedfloat" });
 }
-export async function ffCreate(snap: QuoteSnap, destination: string, refundAddress: string) {
+export async function ffCreate(_snap: QuoteSnap, _destination: string, _refundAddress: string) {
   // The price endpoint cannot lock an order quote. Existing orders remain trackable,
   // but new execution is disabled until an explicit repricing confirmation flow exists.
   throw new Error("This route cannot preserve the confirmed price. Refresh for another live route.");
-  /*
-  const fromCcy = snap.from === "BTC" ? "BTC" : "XLM";
-  const toCcy = snap.from === "BTC" ? "XLM" : "BTC";
-  const d = await ff("create", { type: "fixed", fromCcy, toCcy, direction: "from", amount: snap.amount, toAddress: destination, refundAddress });
-  const order = ffOrder(d, { depositCoin: fromCcy, settleCoin: toCcy });
-  if (!exactPayout(snap, order.settleAmount)) throw new Error("Price changed. Refresh the quote before confirming. Don't send funds.");
-  return { order, secret: { token: String(d.token) } };
-  */
 }
 export async function ffStatus(id: string, token: string, prev?: SwapOrder) {
   return ffOrder(await ff("order", { id, token }), { depositCoin: prev?.depositCoin ?? "xlm", settleCoin: prev?.settleCoin ?? "btc" });
