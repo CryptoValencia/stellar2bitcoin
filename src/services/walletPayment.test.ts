@@ -1,0 +1,59 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Account, Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
+import * as freighter from "@stellar/freighter-api";
+import { paySwapWithWallet } from "./walletPayment";
+import type { SwapOrder } from "@/lib/sideshift-schema";
+
+const source = Keypair.random();
+const destination = Keypair.random();
+const submit = vi.fn();
+vi.mock("@stellar/freighter-api", () => ({ getNetwork: vi.fn(), signTransaction: vi.fn() }));
+vi.mock("@stellar/stellar-sdk", async (original) => {
+  const sdk = await original<typeof import("@stellar/stellar-sdk")>();
+  return { ...sdk, Horizon: { ...sdk.Horizon, Server: class {
+    loadAccount() { return Promise.resolve(new sdk.Account(source.publicKey(), "10")); }
+    fetchBaseFee() { return Promise.resolve(100); }
+    submitTransaction(tx: unknown) { return submit(tx); }
+  } } };
+});
+const wallet = { name: "Freighter" as const, address: source.publicKey(), xlm: 100, usdc: 100, eurc: 0 };
+const makeOrder = (): SwapOrder => ({ provider: "sideshift", id: crypto.randomUUID(), status: "waiting", depositAddress: destination.publicKey(), depositMemo: "required-memo", depositAmount: "25", settleAmount: "0.0001", expiresAt: new Date(Date.now() + 600000).toISOString(), settleAddress: "bc1qexample", depositCoin: "xlm", settleCoin: "btc" });
+afterEach(() => { vi.clearAllMocks(); localStorage.clear(); });
+function allowSigning() {
+  vi.mocked(freighter.getNetwork).mockResolvedValue({ network: "PUBLIC", networkPassphrase: Networks.PUBLIC });
+  vi.mocked(freighter.signTransaction).mockImplementation(async (xdr) => {
+    const tx = TransactionBuilder.fromXDR(xdr, Networks.PUBLIC);
+    tx.sign(source);
+    return { signedTxXdr: tx.toXDR(), signerAddress: source.publicKey() };
+  });
+}
+describe("Wallet deposit safety", () => {
+  it("signs the exact Mainnet amount and required memo, then submits once", async () => {
+    allowSigning(); submit.mockResolvedValue({});
+    const order = makeOrder();
+    const hash = await paySwapWithWallet(wallet, order, vi.fn());
+    expect(hash).toMatch(/^[a-f0-9]{64}$/);
+    const tx = submit.mock.calls[0]?.[0];
+    expect(tx.source).toBe(wallet.address);
+    expect(tx.operations[0]).toMatchObject({ type: "payment", destination: destination.publicKey(), amount: "25.0000000" });
+    expect(new TextDecoder().decode(tx.memo.value)).toBe("required-memo");
+    await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("already submitted");
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+  it("never submits when signing is declined", async () => {
+    allowSigning(); vi.mocked(freighter.signTransaction).mockRejectedValue(new Error("Declined"));
+    await expect(paySwapWithWallet(wallet, makeOrder(), vi.fn())).rejects.toThrow("Declined");
+    expect(submit).not.toHaveBeenCalled();
+  });
+  it("does not sign an expired deposit", async () => {
+    await expect(paySwapWithWallet(wallet, { ...makeOrder(), expiresAt: "2020-01-01T00:00:00Z" }, vi.fn())).rejects.toThrow("window is closed");
+    expect(freighter.signTransaction).not.toHaveBeenCalled();
+  });
+  it("blocks another payment if submission outcome is unknown", async () => {
+    allowSigning(); submit.mockRejectedValue(new Error("Timeout"));
+    const order = makeOrder();
+    await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("do not send again");
+    await expect(paySwapWithWallet(wallet, order, vi.fn())).rejects.toThrow("already submitted");
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+});
