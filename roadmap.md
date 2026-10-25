@@ -1,5 +1,10 @@
 # Roadmap
 
+- [ ] Añadir pago firmado desde la wallet conectada y acceso rápido a su dirección de recepción.
+- [ ] Mostrar enlaces a exploradores únicamente para hashes reales del depósito y del pago.
+- [ ] Añadir historial privado de swaps recientes, recuperable en este navegador.
+- [ ] Añadir atajos 25%, 50% y MAX sin superar el saldo disponible.
+
 - [x] Pulir separación del título A3 y sustituir light/dark por sol y luna.
 
 - [x] Mostrar el mínimo real al introducir una cantidad sin cotización y comprobar recuperación con 1000 XLM.
