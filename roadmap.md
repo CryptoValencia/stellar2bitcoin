@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Revisar funcionamiento completo: cotizaciones reales, errores, wallet, pagos, historial y recuperación; corregir fallos encontrados.
-- [ ] Retirar referencias visibles a Lovable sin eliminar las integraciones necesarias; revisar insignia publicada.
-- [ ] Mover el acceso al historial a un icono discreto sin texto junto al cambio de tema.
+- [x] Revisar funcionamiento: cotizaciones reales en ambos sentidos y mínimos comprobados; 54 pruebas superadas. Corregidos MAX/reserva, reintentos y precio exacto; FixedFloat no ejecutable hasta admitir confirmación de repricing. Wallet y depósito con fondos reales siguen pendientes.
+- [x] Retirar texto promocional del README y comprobar ausencia de referencias visibles; insignia publicada ya oculta. Conservadas integraciones internas necesarias.
+- [x] Mover el acceso al historial a un icono discreto sin texto junto al cambio de tema; comprobado en ambos temas y móvil.
 
 - [x] Añadir pago firmado desde la wallet conectada y acceso rápido a su dirección de recepción (firma, rechazo y bloqueo de pagos repetidos probados).
 - [x] Mostrar enlaces a exploradores únicamente para hashes reales del depósito y del pago (pendiente recepción de hashes de una orden real).
