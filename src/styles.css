@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-display: "Space Mono", ui-monospace, monospace;
-  --font-brand: "Space Mono", ui-monospace, monospace;
+  --font-brand: "Michroma", sans-serif;
   --font-mono: "Space Mono", ui-monospace, monospace;
   --font-sans: "Space Mono", ui-monospace, monospace;
   --radius-sm: var(--radius);
@@ -84,6 +84,18 @@
   }
   h1, h2 { letter-spacing: -0.01em; }
 }
+
+.s2b-wordmark {
+  font-family: var(--font-brand);
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.s2b-wordmark span { font-size: inherit; }
+.s2b-wordmark .s2b-wordmark-two { font-style: italic; font-weight: 400; }
+@media (max-width: 420px) { .s2b-wordmark { font-size: 14px; } }
 
 @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
 @keyframes ticker { to { transform: translateX(-50%); } }
