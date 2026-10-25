@@ -18,8 +18,8 @@ describe("Real wallet connections", () => {
     vi.mocked(freighter.isConnected).mockResolvedValue({ isConnected: true });
     vi.mocked(freighter.requestAccess).mockResolvedValue({ address });
     vi.mocked(freighter.getNetwork).mockResolvedValue({ network: "PUBLIC", networkPassphrase: "Public Global Stellar Network ; September 2015" });
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ balances: [{ asset_type: "native", balance: "25.5" }] }) }));
-    expect(await connectWallet("Freighter")).toEqual({ name: "Freighter", address, xlm: 25.5, usdc: 0, eurc: 0 });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ balances: [{ asset_type: "native", balance: "25.5" }] }) }).mockResolvedValueOnce({ ok: true, json: async () => ({ _embedded: { records: [{ base_reserve_in_stroops: 5000000 }] } }) }));
+    expect(await connectWallet("Freighter")).toEqual({ name: "Freighter", address, xlm: 25.5, usdc: 0, eurc: 0, xlmSpendable: 24.49 });
   });
   it("rejects Testnet connections", async () => {
     vi.mocked(freighter.isConnected).mockResolvedValue({ isConnected: true });
@@ -37,7 +37,7 @@ describe("Real wallet connections", () => {
   });
   it("shows zero for an unfunded account but fails visibly on network errors", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce({ status: 404 }).mockResolvedValueOnce({ status: 503, ok: false }));
-    expect(await loadBalances("G" + "A".repeat(55))).toEqual({ xlm: 0, usdc: 0, eurc: 0 });
+    expect(await loadBalances("G" + "A".repeat(55))).toEqual({ xlm: 0, usdc: 0, eurc: 0, xlmSpendable: 0 });
     await expect(loadBalances("G" + "A".repeat(55))).rejects.toThrow("load your balance");
   });
 });

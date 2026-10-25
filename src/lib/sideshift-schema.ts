@@ -2,6 +2,7 @@ import { z } from "zod";
 import { positiveFinite } from "./quote-safety";
 export const AFFILIATE_ID = "Pw4WPjlQu";
 export const PROVIDERS = ["sideshift", "fixedfloat", "changenow"] as const;
+export const EXECUTABLE_PROVIDERS = ["sideshift", "changenow"] as const;
 export const SWAP_COINS = ["XLM", "USDC", "BTC"] as const;
 export const quoteInput = z.object({
   from: z.enum(SWAP_COINS),
@@ -39,5 +40,5 @@ export type SwapOrder = z.infer<typeof shiftSchema>;
 export const TERMINAL_STATUSES = ["settled", "refunded", "expired"];
 export function orderIsFinal(status: string) { return TERMINAL_STATUSES.includes(status); }
 export function chooseExecutableQuotes<T extends { id: string; live: boolean }>(quotes: T[]) {
-  return quotes.filter((q) => (PROVIDERS as readonly string[]).includes(q.id) && q.live);
+  return quotes.filter((q) => (EXECUTABLE_PROVIDERS as readonly string[]).includes(q.id) && q.live);
 }

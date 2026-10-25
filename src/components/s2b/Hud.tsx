@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { History, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { connectWallet, WALLET_NAMES, type Wallet, type WalletName } from "@/services/walletService";
@@ -16,7 +16,7 @@ const walletLogos: Record<WalletName, string> = {
   Albedo: albedoLogo.url,
 };
 
-export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (w: Wallet | null) => void }) {
+export function Hud({ wallet, onConnect, onHistory }: { wallet: Wallet | null; onConnect: (w: Wallet | null) => void; onHistory: () => void }) {
   const [open, setOpen] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -44,10 +44,13 @@ export function Hud({ wallet, onConnect }: { wallet: Wallet | null; onConnect: (
           </div>
         </div>
         
-        <Button variant="outline" size="icon" onClick={() => setLight(!light)} aria-label={light ? "Switch to dark mode" : "Switch to light mode"} title={light ? "Switch to dark mode" : "Switch to light mode"} className="relative ml-auto h-9 w-9 shrink-0 overflow-hidden rounded-full text-muted-foreground transition-colors hover:bg-muted! hover:text-foreground!">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={onHistory} aria-label="Recent swaps" title="Recent swaps" className="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted! hover:text-foreground!"><History className="h-4 w-4" /></Button>
+        <Button variant="outline" size="icon" onClick={() => setLight(!light)} aria-label={light ? "Switch to dark mode" : "Switch to light mode"} title={light ? "Switch to dark mode" : "Switch to light mode"} className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full text-muted-foreground transition-colors hover:bg-muted! hover:text-foreground!">
           <Sun aria-hidden="true" className={`absolute h-4 w-4 transition-all duration-300 ${light ? "-rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`} />
           <Moon aria-hidden="true" className={`absolute h-4 w-4 transition-all duration-300 ${light ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"}`} />
         </Button>
+        </div>
         {wallet ? (
           <Button variant="secondary" onClick={() => onConnect(null)} title="Disconnect wallet" aria-label="Disconnect wallet" className="chamfer-sm glow-xlm bg-panel px-4 py-2 font-mono text-xs text-xlm">
             {wallet.name.toUpperCase()} · {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}

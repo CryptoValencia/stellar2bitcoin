@@ -17,8 +17,10 @@
 - Fixed quotes carry a session-bound HMAC snapshot; creation reuses that exact provider quote, and changed inputs or expiry invalidate it instead of silently repricing.
 - SideShift uses its documented private-key header and affiliate ID, validates supported pairs, forwards trusted visitor IP, and creates fixed orders only on explicit confirmation.
 - Guest swap orders are stored privately with an HttpOnly session capability hashed in the database; server handlers verify that capability before privileged reads, and provider status—not timers—determines completion.
-- SideShift, FixedFloat and ChangeNOW quotes are fetched server-side in one call, signed, and the highest BTC output is preselected; provider secrets (e.g. FixedFloat order token) are stored only in the database, never returned to the browser.
+- Executable provider quotes are fetched server-side in one call, signed, and the highest output is preselected; FixedFloat execution is disabled until it can preserve the confirmed quote or explicitly request repricing confirmation. Existing orders remain trackable and provider tokens stay private.
+- Order retries are bound to immutable request details; uncertain provider creation retains its claim to prevent blind duplicates.
 - Quote failures travel as safe typed results to the swap UI; show provider-sourced route limits when available and allow retry rather than silently displaying no price.
 - Recent swaps use the existing HttpOnly session capability and session-scoped request IDs; history returns only normalized orders, never provider secrets.
 - Wallet payments use dynamically imported Stellar SDK and official wallet signers, verify the signed transaction matches the prepared Mainnet payment, and preserve an attempted transaction hash to prevent blind resubmission.
 - Explorer links require real validated on-chain transaction hashes; Lightning hashes are never linked as Bitcoin transactions.
+- XLM shortcuts and payment validation retain Mainnet's current ledger reserve, sponsorship adjustments and a network-fee buffer; recheck spendable funds before signing.

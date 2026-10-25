@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
-import { History, Wallet as WalletIcon } from "lucide-react";
+import { Wallet as WalletIcon } from "lucide-react";
 import { RecentSwaps } from "@/components/s2b/RecentSwaps";
 import { shortcutAmount } from "@/lib/swap-extras";
 import { createSwapOrder, getSwapOrder } from "@/lib/sideshift.functions";
@@ -91,7 +91,7 @@ function Index() {
   const amt = parseFloat(amount) || 0;
   const fromCoin: SwapCoin = reverse ? "BTC" : token;
   const toCoin: SwapCoin = reverse ? token : "BTC";
-  const balance = wallet && !reverse ? { XLM: wallet.xlm, USDC: wallet.usdc }[token] : 0;
+  const balance = wallet && !reverse ? { XLM: wallet.xlmSpendable ?? 0, USDC: wallet.usdc }[token] : 0;
 
   // The Stellar wallet doubles as the payout address when receiving XLM/USDC.
   useEffect(() => {
@@ -129,8 +129,8 @@ function Index() {
   const flip = () => { setReverse((r) => !r); setDest(""); setRefund(""); };
 
   const startSwap = async () => {
-    if (!wallet) { document.getElementById("connect-wallet")?.click(); return; }
     if (order && !orderIsFinal(order.status)) { setExecuting(true); return; }
+    if (!wallet) { document.getElementById("connect-wallet")?.click(); return; }
     if (blocker || creating || !quote?.snapshot || !quote.quoteSignature) return;
     setCreating(true); setOrderError("");
     const id = requestId ?? crypto.randomUUID();
@@ -160,7 +160,7 @@ function Index() {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <Hud wallet={wallet} onConnect={setWallet} />
+      <Hud wallet={wallet} onConnect={setWallet} onHistory={() => setHistoryOpen(true)} />
       <main className="relative z-10 mx-auto w-full max-w-[460px] flex-1 px-4 py-12">
         <div className="relative">
           {/* Sell */}
@@ -270,11 +270,10 @@ function Index() {
 
         <Button disabled={creating || (!!blocker && !!wallet && !order)} onClick={startSwap}
           className="btn-cta mt-6 h-auto w-full py-4 text-base font-bold">
-          {creating ? "Creating swap…" : !wallet ? "Connect wallet" : order && !orderIsFinal(order.status) ? "View current swap" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
+          {creating ? "Creating swap…" : order && !orderIsFinal(order.status) ? "View current swap" : !wallet ? "Connect wallet" : blocker ? blocker.charAt(0) + blocker.slice(1).toLowerCase() : "Swap"}
         </Button>
         {orderError && <p role="alert" className="mt-3 text-xs text-destructive">{orderError}</p>}
         {order && !orderIsFinal(order.status) && <Button variant="link" className="mt-2 w-full text-xs" onClick={() => setExecuting(true)}>View current swap</Button>}
-        <div className="mt-4 flex justify-center"><Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:bg-muted! hover:text-foreground!" onClick={() => setHistoryOpen(true)}><History />Recent swaps</Button></div>
       </main>
       {executing && order && (
         <ExecutionModal key={`${order.provider}:${order.id}`} order={order} wallet={wallet} requestId={orderRequestId} onClose={() => setExecuting(false)} />
