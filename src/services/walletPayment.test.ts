@@ -85,7 +85,7 @@ describe("Wallet deposit safety", () => {
     vi.mocked(lobstr.getPublicKey).mockResolvedValue(source.publicKey());
     vi.mocked(lobstr.signTransaction).mockImplementation(sign);
     const { default: albedo } = await import("@albedo-link/intent");
-    vi.mocked(albedo.tx).mockImplementation(async ({ xdr }: { xdr: string }) => ({ signed_envelope_xdr: await sign(xdr) }));
+    vi.mocked(albedo.tx).mockImplementation(async ({ xdr }: { xdr: string }) => ({ xdr, signed_envelope_xdr: await sign(xdr), tx_hash: Array.from(TransactionBuilder.fromXDR(xdr, Networks.PUBLIC).hash(), (byte) => byte.toString(16).padStart(2, "0")).join(""), network: "public", result: {} }));
     await paySwapWithWallet({ ...wallet, name }, makeOrder(), vi.fn());
     expect(submit).toHaveBeenCalledTimes(1);
   });
