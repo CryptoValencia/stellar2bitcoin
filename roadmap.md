@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Pulir separación del título A3 y sustituir light/dark por sol y luna.
+
 - [x] Mostrar el mínimo real al introducir una cantidad sin cotización y comprobar recuperación con 1000 XLM.
 - [x] Aplicar logo A3 con el 2 del mismo tamaño y en cursiva, sin cambiar la tipografía del swap.
 
