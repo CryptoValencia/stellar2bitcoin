@@ -38,17 +38,21 @@ function realQuote(id: RouteId, outAmount: number, outCoin: SwapCoin, lightning:
   return { id, provider: id, tagline: "", badge: "BEST RETURN", outAmount, outCoin, lightning, live: true, feeUsd: null, feeBtc: null, etaMin: null };
 }
 
-export async function fetchAllQuotes(from: SwapCoin, to: SwapCoin, amount: number, net: BtcNet): Promise<Quote[]> {
-  if (!positiveFinite(amount)) return [];
+export async function fetchQuoteResult(from: SwapCoin, to: SwapCoin, amount: number, net: BtcNet): Promise<{ quotes: Quote[]; error: string }> {
+  if (!positiveFinite(amount)) return { quotes: [], error: "" };
   const lightning = net === "lightning";
   try {
     const r = await getSideShiftQuote({ data: { from, to, amount, lightning } });
-    if (!r.ok) return [];
-    return r.quotes
+    if (!r.ok) return { quotes: [], error: r.error };
+    const quotes = r.quotes
       .filter((q) => positiveFinite(q.outAmount) && q.quoteSignature && quoteMatches(q.quote, { from, to, amount, lightning }))
       .map((q) => ({ ...realQuote(q.quote.provider, q.outAmount, q.quote.to, lightning), snapshot: q.quote, quoteSignature: q.quoteSignature }))
       .sort((a, b) => b.outAmount - a.outAmount);
-  } catch { return []; }
+    return { quotes, error: quotes.length ? "" : "The quote expired. Please retry." };
+  } catch { return { quotes: [], error: "Couldn't load a live quote. Please try again shortly." }; }
+}
+export async function fetchAllQuotes(from: SwapCoin, to: SwapCoin, amount: number, net: BtcNet): Promise<Quote[]> {
+  return (await fetchQuoteResult(from, to, amount, net)).quotes;
 }
 
 export type AddrType = "taproot" | "segwit" | "legacy" | "lightning" | "stellar" | "invalid" | "empty";

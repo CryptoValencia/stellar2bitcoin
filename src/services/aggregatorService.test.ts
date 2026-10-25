@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/sideshift.functions", () => ({ getSideShiftQuote: vi.fn() }));
-import { fetchAllQuotes } from "./aggregatorService";
+import { fetchAllQuotes, fetchQuoteResult } from "./aggregatorService";
 import { getSideShiftQuote } from "@/lib/sideshift.functions";
 const snap = (provider: "sideshift" | "changenow", settleAmount: string, from: "XLM" | "USDC" | "BTC" = "XLM", to: "XLM" | "USDC" | "BTC" = "BTC", amount = 1000) => ({ from, to, amount, lightning: false, id: "q", settleAmount, expiresAt: new Date(Date.now() + 60000).toISOString(), provider });
 describe("live quote aggregation", () => {
@@ -27,5 +27,16 @@ describe("live quote aggregation", () => {
   it("does not substitute a simulated price when providers fail", async () => {
     vi.mocked(getSideShiftQuote).mockResolvedValue({ ok: false, error: "unavailable" });
     expect(await fetchAllQuotes("USDC", "BTC", 100, "mainnet")).toEqual([]);
+  });
+  it("preserves a live amount-limit error instead of silently returning no price", async () => {
+    const error = "Try an amount between 45.229682 and 176678.4452297 XLM.";
+    vi.mocked(getSideShiftQuote).mockResolvedValue({ ok: false, error });
+    expect(await fetchQuoteResult("XLM", "BTC", 2, "mainnet")).toEqual({ quotes: [], error });
+  });
+  it("returns a recoverable error when the quote request fails", async () => {
+    vi.mocked(getSideShiftQuote).mockRejectedValue(new Error("network failure"));
+    const result = await fetchQuoteResult("XLM", "BTC", 1000, "mainnet");
+    expect(result.quotes).toEqual([]);
+    expect(result.error).toBe("Couldn't load a live quote. Please try again shortly.");
   });
 });
