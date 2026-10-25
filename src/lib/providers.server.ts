@@ -2,6 +2,7 @@
 import { quoteSnapshotSchema, shiftSchema, type QuoteSnap, type SwapOrder } from "./sideshift-schema";
 import type { z } from "zod";
 import type { quoteInput } from "./sideshift-schema";
+import { transactionHash } from "./swap-extras";
 type QuoteIn = z.infer<typeof quoteInput>;
 
 const PRICE_TOLERANCE = 0.999;
@@ -37,6 +38,9 @@ function ffOrder(d: any, fallback: { depositCoin: string; settleCoin: string }):
     settleAddress: String(d.to?.address ?? ""),
     depositCoin: String(d.from?.currency ?? fallback.depositCoin).toLowerCase(),
     settleCoin: String(d.to?.currency ?? fallback.settleCoin).toLowerCase(),
+    depositNetwork: String(d.from?.currency ?? fallback.depositCoin).toUpperCase() === "BTC" ? "bitcoin" : "stellar",
+    settleNetwork: String(d.to?.currency ?? fallback.settleCoin).toUpperCase() === "BTC" ? "bitcoin" : "stellar",
+    depositTxHash: transactionHash(d.from?.tx?.id), settleTxHash: transactionHash(d.to?.tx?.id),
   });
 }
 export async function ffQuote(data: QuoteIn): Promise<QuoteSnap> {
@@ -98,5 +102,5 @@ export async function cnCreate(snap: QuoteSnap, destination: string, refundAddre
 }
 export async function cnStatus(prev: SwapOrder) {
   const j = await cn(`exchange/by-id?id=${encodeURIComponent(prev.id)}`);
-  return shiftSchema.parse({ ...prev, status: CN_STATUS[j.status] ?? prev.status, settleAmount: j.amountTo ? String(j.amountTo) : prev.settleAmount });
+  return shiftSchema.parse({ ...prev, status: CN_STATUS[j.status] ?? prev.status, settleAmount: j.amountTo ? String(j.amountTo) : prev.settleAmount, depositTxHash: transactionHash(j.payinHash) ?? prev.depositTxHash, settleTxHash: transactionHash(j.payoutHash) ?? prev.settleTxHash });
 }
