@@ -61,6 +61,7 @@ function Index() {
   const [more, setMore] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [orderRequestId, setOrderRequestId] = useState<string | undefined>();
+  const [historyOrder, setHistoryOrder] = useState<{ order: SwapOrder; requestId: string } | null>(null);
   const createOrder = useServerFn(createSwapOrder);
   const recoverOrder = useServerFn(getSwapOrder);
   const loadPrices = useServerFn(getMarketPrices);
@@ -273,12 +274,13 @@ function Index() {
         </Button>
         {orderError && <p role="alert" className="mt-3 text-xs text-destructive">{orderError}</p>}
         {order && !orderIsFinal(order.status) && <Button variant="link" className="mt-2 w-full text-xs" onClick={() => setExecuting(true)}>View current swap</Button>}
-        <div className="mt-4 flex justify-center"><Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => setHistoryOpen(true)}><History />Recent swaps</Button></div>
+        <div className="mt-4 flex justify-center"><Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:bg-muted! hover:text-foreground!" onClick={() => setHistoryOpen(true)}><History />Recent swaps</Button></div>
       </main>
       {executing && order && (
         <ExecutionModal key={`${order.provider}:${order.id}`} order={order} wallet={wallet} requestId={orderRequestId} onClose={() => setExecuting(false)} />
       )}
-      {historyOpen && <RecentSwaps onClose={() => setHistoryOpen(false)} onSelect={(recent, id) => { setOrder(recent); setOrderRequestId(id); setHistoryOpen(false); setExecuting(true); }} />}
+      {historyOpen && <RecentSwaps onClose={() => setHistoryOpen(false)} onSelect={(recent, id) => { setHistoryOrder({ order: recent, requestId: id }); setHistoryOpen(false); }} />}
+      {historyOrder && <ExecutionModal key={`${historyOrder.order.provider}:${historyOrder.order.id}`} order={historyOrder.order} wallet={wallet} requestId={historyOrder.requestId} onClose={() => setHistoryOrder(null)} />}
     </div>
   );
 }
