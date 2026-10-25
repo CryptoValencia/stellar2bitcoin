@@ -9,6 +9,7 @@ const source = Keypair.random();
 const destination = Keypair.random();
 const submit = vi.fn();
 vi.mock("@stellar/freighter-api", () => ({ getNetwork: vi.fn(), signTransaction: vi.fn() }));
+vi.mock("./walletService", async (original) => ({ ...await original<typeof import("./walletService")>(), loadBalances: vi.fn().mockResolvedValue({ xlm: 100, usdc: 100, eurc: 0, xlmSpendable: 98.99 }) }));
 vi.mock("@stellar/stellar-sdk", async (original) => {
   const sdk = await original<typeof import("@stellar/stellar-sdk")>();
   return { ...sdk, Horizon: { ...sdk.Horizon, Server: class {
@@ -21,7 +22,7 @@ const wallet = { name: "Freighter" as const, address: source.publicKey(), xlm: 1
 const makeOrder = (): SwapOrder => ({ provider: "sideshift", id: crypto.randomUUID(), status: "waiting", depositAddress: destination.publicKey(), depositMemo: "required-memo", depositAmount: "25", settleAmount: "0.0001", expiresAt: new Date(Date.now() + 600000).toISOString(), settleAddress: "bc1qexample", depositCoin: "xlm", settleCoin: "btc" });
 beforeEach(() => {
   const storage = new Map<string, string>();
-  vi.stubGlobal("localStorage", { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) });
+  vi.stubGlobal("localStorage", { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) });
   vi.stubGlobal("navigator", { locks: { request: (_key: string, _options: unknown, callback: (lock: object) => unknown) => callback({}) } });
 });
 afterEach(() => { vi.clearAllMocks(); vi.unstubAllGlobals(); });

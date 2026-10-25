@@ -11,6 +11,7 @@ export const getMarketPrices = createServerFn({ method: "POST" })
     const readCoinGecko = async (): Promise<MarketPrices | null> => {
       const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,stellar&vs_currencies=usd", {
         headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) throw new Error(`price feed ${res.status}`);
       const j = (await res.json()) as { bitcoin?: { usd?: number }; stellar?: { usd?: number } };
@@ -22,6 +23,7 @@ export const getMarketPrices = createServerFn({ method: "POST" })
     const readBinance = async (): Promise<MarketPrices | null> => {
       const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","XLMUSDT"]', {
         headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) throw new Error(`price feed ${res.status}`);
       const j = (await res.json()) as { symbol: string; price: string }[];
